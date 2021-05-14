@@ -1,16 +1,24 @@
 use std::convert::TryFrom;
 use std::{io, mem};
 
+/// An archive reader or writer trait
+
+/// There is a single trait in order to simplify `Archivable` impls.
 pub trait Archive {
-    fn is_loading(&self) -> bool;
+    /// `true` if this is an archive reader
+    fn is_reader(&self) -> bool;
+
+    /// Write all requested bytes in `buf` or return an error
     fn write_all(&mut self, buf: &[u8]) -> io::Result<()>;
+
+    /// Read exactly the requested bytes into `buf` or return an error
     fn read_exact(&mut self, buf: &mut [u8]) -> io::Result<()>;
 }
 
 impl<A: Archive + ?Sized> Archive for &mut A {
     #[inline]
-    fn is_loading(&self) -> bool {
-        (**self).is_loading()
+    fn is_reader(&self) -> bool {
+        (**self).is_reader()
     }
 
     #[inline]
@@ -24,9 +32,13 @@ impl<A: Archive + ?Sized> Archive for &mut A {
     }
 }
 
+/// A read archive wrapper for `io::Read`
 pub struct ArchiveReader<F>(pub F);
+
+/// A write archive wrapper for `io::Write`
 pub struct ArchiveWriter<F>(pub F);
 
+/// A write archive wrapper that count written bytes
 pub struct ArchiveLen {
     len: u64,
 }
@@ -42,7 +54,7 @@ impl ArchiveLen {
 }
 
 impl Archive for ArchiveLen {
-    fn is_loading(&self) -> bool {
+    fn is_reader(&self) -> bool {
         false
     }
 
@@ -57,7 +69,7 @@ impl Archive for ArchiveLen {
 }
 
 impl<F: io::Read> Archive for io::BufReader<F> {
-    fn is_loading(&self) -> bool {
+    fn is_reader(&self) -> bool {
         true
     }
 
@@ -71,7 +83,7 @@ impl<F: io::Read> Archive for io::BufReader<F> {
 }
 
 impl<F: io::Write> Archive for io::BufWriter<F> {
-    fn is_loading(&self) -> bool {
+    fn is_reader(&self) -> bool {
         false
     }
 
@@ -80,15 +92,12 @@ impl<F: io::Write> Archive for io::BufWriter<F> {
     }
 
     fn read_exact(&mut self, _buf: &mut [u8]) -> io::Result<()> {
-        Err(io::Error::new(
-            io::ErrorKind::PermissionDenied,
-            "write only",
-        ))
+        Err(io::Error::new(io::ErrorKind::PermissionDenied, "write only"))
     }
 }
 
 impl<F: io::Read> Archive for ArchiveReader<F> {
-    fn is_loading(&self) -> bool {
+    fn is_reader(&self) -> bool {
         true
     }
 
@@ -102,7 +111,7 @@ impl<F: io::Read> Archive for ArchiveReader<F> {
 }
 
 impl<F: io::Write> Archive for ArchiveWriter<F> {
-    fn is_loading(&self) -> bool {
+    fn is_reader(&self) -> bool {
         false
     }
 
@@ -111,13 +120,11 @@ impl<F: io::Write> Archive for ArchiveWriter<F> {
     }
 
     fn read_exact(&mut self, _buf: &mut [u8]) -> io::Result<()> {
-        Err(io::Error::new(
-            io::ErrorKind::PermissionDenied,
-            "write only",
-        ))
+        Err(io::Error::new(io::ErrorKind::PermissionDenied, "write only"))
     }
 }
 
+/// A data structure that can be archived (encoded/decoded)
 pub trait Archivable {
     fn ser_de<A: Archive>(&mut self, ar: &mut A) -> io::Result<()>;
 
@@ -130,7 +137,7 @@ pub trait Archivable {
 
 impl Archivable for [u8] {
     fn ser_de<A: Archive>(&mut self, ar: &mut A) -> io::Result<()> {
-        if ar.is_loading() {
+        if ar.is_reader() {
             ar.read_exact(self)
         } else {
             ar.write_all(self)
@@ -164,7 +171,7 @@ macro_rules! doit {
     ($($x:ident),+) => {$(
         impl Archivable for $x {
             fn ser_de<A: Archive>(&mut self, ar: &mut A) -> io::Result<()> {
-                if ar.is_loading() {
+                if ar.is_reader() {
                     let mut bytes: [u8; mem::size_of::<Self>()] = Default::default();
                     bytes.ser_de(ar)?;
                     *self = Self::from_le_bytes(bytes);
@@ -180,7 +187,7 @@ doit!(u8, u16, u32, u64, i8, i16, i32, i64, usize);
 
 impl Archivable for bool {
     fn ser_de<A: Archive>(&mut self, ar: &mut A) -> io::Result<()> {
-        if ar.is_loading() {
+        if ar.is_reader() {
             let mut v = 0u8;
             v.ser_de(ar)?;
             *self = v != 0;
@@ -196,25 +203,20 @@ impl Archivable for String {
         let mut len =
             u32::try_from(self.len()).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
         len.ser_de(ar)?;
-        if ar.is_loading() {
-            let tmp = mem::take(self);
-            let mut buffer = tmp.into_bytes();
+        let tmp = mem::take(self);
+        let mut buffer = tmp.into_bytes();
+        if ar.is_reader() {
             buffer.resize(len as usize, 0);
             ar.read_exact(&mut buffer)?;
             match buffer.pop() {
                 Some(0) => (),
                 _ => {
-                    return Err(io::Error::new(
-                        io::ErrorKind::Other,
-                        "strings are null terminated",
-                    ))
+                    return Err(io::Error::new(io::ErrorKind::Other, "strings are null terminated"))
                 }
             }
             *self = String::from_utf8(buffer)
                 .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
         } else {
-            let tmp = mem::take(self);
-            let mut buffer = tmp.into_bytes();
             buffer.push(0u8);
             ar.write_all(&buffer)?;
             buffer.pop();

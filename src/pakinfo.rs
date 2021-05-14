@@ -2,10 +2,11 @@ use std::io;
 
 use crate::{
     archive::{Archivable, Archive},
-    constant::*,
+    constants::*,
     PakVersion,
 };
 
+/// FPakInfo archivable
 #[derive(Debug, Clone)]
 pub struct PakInfo {
     /// Pak file magic value.
@@ -21,7 +22,6 @@ pub struct PakInfo {
     /// Flag indicating if the pak index has been encrypted.
     pub encrypted_index: bool,
     /// Flag indicating if the pak index has been frozen
-    /// @todo loadtime: we should find a way to unload the index - potentially make two indices, the full one and unloaded one? unclear how, but at least we now have an option to choose per-platform
     pub index_is_frozen: bool,
     /// Encryption key guid. Empty if we should use the embedded key.
     pub encryption_key_guid: [u32; 4],
@@ -47,10 +47,7 @@ impl Default for PakInfo {
 
 impl PakInfo {
     pub fn new(version: PakVersion) -> Self {
-        Self {
-            version,
-            ..Default::default()
-        }
+        Self { version, ..Default::default() }
     }
 }
 
@@ -75,7 +72,7 @@ impl Archivable for PakInfo {
         if version != self.version.raw() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                format!("magic {:x} is not {:x}", self.magic, PAK_FILE_MAGIC),
+                format!("version {} is not {}", self.version, version),
             ));
         }
 
@@ -83,7 +80,7 @@ impl Archivable for PakInfo {
         self.index_size.ser_de(ar)?;
         self.hash.ser_de(ar)?;
 
-        if ar.is_loading() {
+        if ar.is_reader() {
             if self.version < PakVersion::IndexEncryption {
                 self.encrypted_index = false;
             }
@@ -108,7 +105,7 @@ impl Archivable for PakInfo {
                 buffer = &mut buffer[..LEN - COMPRESSION_METHOD_NAME_LEN];
             }
 
-            if ar.is_loading() {
+            if ar.is_reader() {
                 buffer.ser_de(ar)?;
                 let mut i = 0;
                 while i < buffer.len() {

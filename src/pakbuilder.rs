@@ -17,11 +17,7 @@ struct Sha1Writer<W> {
 
 impl<W> Sha1Writer<W> {
     fn new(ar: W) -> Self {
-        Self {
-            ar,
-            bytes: 0,
-            sha1: Sha1::new(),
-        }
+        Self { ar, bytes: 0, sha1: Sha1::new() }
     }
 
     pub fn get_mut(&mut self) -> &mut W {
@@ -34,8 +30,8 @@ impl<W> Sha1Writer<W> {
 }
 
 impl<A: Archive> Archive for Sha1Writer<A> {
-    fn is_loading(&self) -> bool {
-        self.ar.is_loading()
+    fn is_reader(&self) -> bool {
+        self.ar.is_reader()
     }
 
     fn write_all(&mut self, buf: &[u8]) -> io::Result<()> {
@@ -139,11 +135,7 @@ pub struct PakFileBuilder {
 
 impl PakFileBuilder {
     pub fn new(version: PakVersion) -> Self {
-        Self {
-            pos: 0,
-            info: PakInfo::new(version),
-            index: PakIndex::default(),
-        }
+        Self { pos: 0, info: PakInfo::new(version), index: PakIndex::default() }
     }
 
     /// Write the index and info blocks
@@ -164,10 +156,7 @@ impl PakFileBuilder {
         self.info.hash = sha1_ar.sha1();
         self.info.ser_de(ar)?;
 
-        let pak = PakFile {
-            info: self.info,
-            index: self.index,
-        };
+        let pak = PakFile { info: self.info, index: self.index };
         Ok(pak)
     }
 
@@ -199,41 +188,23 @@ impl PakFileBuilder {
         }
     }
 
-    pub fn import<'a, A: Archive>(
-        &'a mut self,
+    pub fn import<A: Archive>(
+        &mut self,
         ar: A,
         name: String,
         mut entry: PakEntry,
-    ) -> AssetWriter<'a, A> {
+    ) -> AssetWriter<'_, A> {
         entry.offset = self.pos;
-        AssetWriter {
-            builder: self,
-            ar: Sha1Writer::new(ar),
-            name,
-            entry,
-            import: true,
-        }
+        AssetWriter { builder: self, ar: Sha1Writer::new(ar), name, entry, import: true }
     }
 
-    pub fn add<'a, A: Archive>(&'a mut self, ar: A, name: String) -> AssetWriter<'a, A> {
-        let mut entry = PakEntry::default();
-        entry.offset = self.pos;
-        AssetWriter {
-            builder: self,
-            ar: Sha1Writer::new(ar),
-            name,
-            entry,
-            import: false,
-        }
+    pub fn add<A: Archive>(&mut self, ar: A, name: String) -> AssetWriter<'_, A> {
+        let entry = PakEntry { offset: self.pos, ..PakEntry::default() };
+        AssetWriter { builder: self, ar: Sha1Writer::new(ar), name, entry, import: false }
     }
 
     pub fn deleted(&mut self, name: &str) -> io::Result<&mut PakEntry> {
-        let mut entry = PakEntry::default();
-        entry.offset = self.pos;
-        entry.size = 0;
-        entry.uncompressed_size = 0;
-        entry.flags |= FLAG_DELETED;
-
+        let entry = PakEntry { offset: self.pos, flags: FLAG_DELETED, ..PakEntry::default() };
         let entry = self.index.add(name.to_string(), entry);
         Ok(entry)
     }

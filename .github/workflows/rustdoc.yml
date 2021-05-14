@@ -1,14 +1,16 @@
 name: rustdoc
+
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
 
 jobs:
   rustdoc:
     runs-on: ubuntu-latest
-    env:
-      CARGO_INCREMENTAL: 0
 
     steps:
       - uses: actions/checkout@v2

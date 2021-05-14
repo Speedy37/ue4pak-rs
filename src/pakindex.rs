@@ -7,6 +7,7 @@ use crate::{
     PakEntry, PakVersion,
 };
 
+/// FPakEntryPair archivable
 #[derive(Debug, Default)]
 struct PakIndexEntry {
     name: String,
@@ -20,6 +21,7 @@ impl PakIndexEntry {
     }
 }
 
+/// FPakFile index
 #[derive(Debug, Default)]
 pub struct PakIndex {
     mount_point: String,
@@ -33,9 +35,7 @@ impl PakIndex {
     }
 
     pub fn iter(&self) -> impl Iterator<Item = (&str, &PakEntry)> {
-        self.files
-            .iter()
-            .map(|entry| (entry.name.as_str(), &entry.entry))
+        self.files.iter().map(|entry| (entry.name.as_str(), &entry.entry))
     }
 
     pub fn clear(&mut self) {
@@ -61,12 +61,8 @@ impl PakIndex {
         for item in &mut self.files {
             item.ser_de(ar, version)?;
         }
-        self.map = self
-            .files
-            .iter()
-            .enumerate()
-            .map(|(idx, entry)| (entry.name.clone(), idx))
-            .collect();
+        self.map =
+            self.files.iter().enumerate().map(|(idx, entry)| (entry.name.clone(), idx)).collect();
         Ok(())
     }
 }

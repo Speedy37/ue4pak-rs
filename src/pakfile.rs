@@ -5,7 +5,7 @@ use log::{debug, trace};
 use crate::{
     archive::{Archivable, Archive},
     pakindex::PakIndex,
-    PakEntry, PakInfo, PakVersion,
+    PakInfo, PakVersion,
 };
 
 #[derive(Debug, Default)]
@@ -14,20 +14,10 @@ pub struct PakFile {
     pub(crate) index: PakIndex,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum Change<T> {
-    Del(T),
-    Add(T),
-    Mut { old: T, new: T },
-}
-
 impl PakFile {
     pub fn new<A: Archive + io::Seek>(ar: &mut A) -> io::Result<Self> {
         let info = Self::de_pakinfo(ar)?;
-        let mut this = Self {
-            info,
-            index: PakIndex::default(),
-        };
+        let mut this = Self { info, index: PakIndex::default() };
         this.load_index(ar)?;
         Ok(this)
     }
@@ -38,40 +28,6 @@ impl PakFile {
 
     pub fn index(&self) -> &PakIndex {
         &self.index
-    }
-
-    pub fn diff<'a>(old: &'a Self, new: &'a Self) -> Vec<(&'a str, Change<&'a PakEntry>)> {
-        let old_index = old.index();
-        let new_index = new.index();
-        let mut changes = Vec::new();
-        for (name, old_entry) in old_index.iter() {
-            match new_index.find(name) {
-                Some(new_entry) => {
-                    if old_entry.size != new_entry.size || old_entry.hash != new_entry.hash {
-                        // modified
-                        changes.push((
-                            name,
-                            Change::Mut {
-                                new: new_entry,
-                                old: old_entry,
-                            },
-                        ));
-                    }
-                }
-                None => {
-                    // deleted
-                    changes.push((name, Change::Del(old_entry)));
-                }
-            }
-        }
-        for (name, new_entry) in new_index.iter() {
-            if old_index.find(name).is_none() {
-                // added
-                changes.push((name, Change::Add(new_entry)));
-            }
-        }
-
-        changes
     }
 
     fn load_index<A: Archive + io::Seek>(&mut self, ar: &mut A) -> io::Result<()> {
@@ -87,16 +43,14 @@ impl PakFile {
                 io::ErrorKind::InvalidData,
                 "PakFile was frozen, this is not supported and UE4.26 also dropped the support",
             ));
+        } else if self.info.encrypted_index {
+            let index_size = usize::try_from(self.info.index_size)
+                .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
+            let mut buffer = vec![0u8; index_size];
+            buffer.ser_de(ar)?;
+            todo!()
         } else {
-            if self.info.encrypted_index {
-                let index_size = usize::try_from(self.info.index_size)
-                    .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
-                let mut buffer = vec![0u8; index_size];
-                buffer.ser_de(ar)?;
-                todo!()
-            } else {
-                self.index.ser_de(ar, self.info.version)?;
-            }
+            self.index.ser_de(ar, self.info.version)?;
         }
         Ok(())
     }
@@ -129,9 +83,6 @@ impl PakFile {
             }
         }
 
-        Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "no compatible version found",
-        ))
+        Err(io::Error::new(io::ErrorKind::InvalidData, "no compatible version found"))
     }
 }

@@ -1,3 +1,4 @@
+/// Raw FArchive tools
 pub mod archive;
 mod pakbuilder;
 mod pakentry;
@@ -76,7 +77,7 @@ impl PakVersion {
     }
 }
 
-pub mod constant {
+pub mod constants {
 
     /// Magic number to use in header
     pub const PAK_FILE_MAGIC: u32 = 0x5A6F12E1;
@@ -104,7 +105,7 @@ pub mod constant {
     pub const COMPRESS_BIAS_MEMORY: i32 = 0x10;
     /// Prefer compression that compresses faster (ONLY VALID FOR COMPRESSION)
     pub const COMPRESS_BIAS_SPEED: i32 = 0x20;
-    /// Is the source buffer padded out	(ONLY VALID FOR UNCOMPRESS)
+    /// Is the source buffer padded out (ONLY VALID FOR UNCOMPRESS)
     pub const COMPRESS_SOURCE_IS_PADDED: i32 = 0x80;
 
     /// Set of flags that are options are still allowed

@@ -1,13 +1,15 @@
+use std::io;
+
 use crate::{
     archive::{Archivable, Archive, ArchiveLen},
-    constant::*,
+    constants::*,
     PakVersion,
 };
-use std::io;
 
 pub const FLAG_ENCRYPTED: u8 = 0x01;
 pub const FLAG_DELETED: u8 = 0x02;
 
+/// FPakEntry archivable
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct PakEntry {
     /// Offset into pak file where the file is stored.
