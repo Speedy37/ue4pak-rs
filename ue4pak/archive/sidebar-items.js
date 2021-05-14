@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ArchiveLen",""],["ArchiveReader",""],["ArchiveWriter",""]],"trait":[["Archivable",""],["Archive",""]]});
+initSidebarItems({"struct":[["ArchiveLen","A write archive wrapper that count written bytes"],["ArchiveReader","A read archive wrapper for `io::Read`"],["ArchiveWriter","A write archive wrapper for `io::Write`"]],"trait":[["Archivable","A data structure that can be archived (encoded/decoded)"],["Archive","An archive reader or writer trait There is a single trait in order to simplify `Archivable` impls."]]});

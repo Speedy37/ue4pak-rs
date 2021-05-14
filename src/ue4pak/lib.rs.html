@@ -113,7 +113,9 @@
 <span id="110">110</span>
 <span id="111">111</span>
 <span id="112">112</span>
+<span id="113">113</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="doccomment">/// Raw FArchive tools</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">archive</span>;
 <span class="kw">mod</span> <span class="ident">pakbuilder</span>;
 <span class="kw">mod</span> <span class="ident">pakentry</span>;
@@ -192,7 +194,7 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">constant</span> {
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">constants</span> {
 
     <span class="doccomment">/// Magic number to use in header</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PAK_FILE_MAGIC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x5A6F12E1</span>;
@@ -220,7 +222,7 @@
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">COMPRESS_BIAS_MEMORY</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">0x10</span>;
     <span class="doccomment">/// Prefer compression that compresses faster (ONLY VALID FOR COMPRESSION)</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">COMPRESS_BIAS_SPEED</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">0x20</span>;
-    <span class="doccomment">/// Is the source buffer padded out	(ONLY VALID FOR UNCOMPRESS)</span>
+    <span class="doccomment">/// Is the source buffer padded out (ONLY VALID FOR UNCOMPRESS)</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">COMPRESS_SOURCE_IS_PADDED</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">0x80</span>;
 
     <span class="doccomment">/// Set of flags that are options are still allowed</span>

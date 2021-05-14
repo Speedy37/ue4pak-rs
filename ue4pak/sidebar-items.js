@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["PakVersion",""]],"mod":[["archive",""],["constant",""]],"struct":[["AssetWriter",""],["PakCompressedBlock",""],["PakEntry",""],["PakFile",""],["PakFileBuilder",""],["PakInfo",""]]});
+initSidebarItems({"enum":[["PakVersion",""]],"mod":[["archive","Raw FArchive tools"],["constants",""]],"struct":[["AssetWriter",""],["PakCompressedBlock",""],["PakEntry","FPakEntry archivable"],["PakFile",""],["PakFileBuilder",""],["PakInfo","FPakInfo archivable"]]});

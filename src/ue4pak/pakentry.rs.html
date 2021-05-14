@@ -102,17 +102,21 @@
 <span id="99"> 99</span>
 <span id="100">100</span>
 <span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
+
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">archive</span>::{<span class="ident">Archivable</span>, <span class="ident">Archive</span>, <span class="ident">ArchiveLen</span>},
-    <span class="ident">constant</span>::<span class="kw-2">*</span>,
+    <span class="ident">constants</span>::<span class="kw-2">*</span>,
     <span class="ident">PakVersion</span>,
 };
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
 
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FLAG_ENCRYPTED</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x01</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FLAG_DELETED</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x02</span>;
 
+<span class="doccomment">/// FPakEntry archivable</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PakEntry</span> {
     <span class="doccomment">/// Offset into pak file where the file is stored.</span>

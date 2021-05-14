@@ -167,18 +167,16 @@
 <span id="164">164</span>
 <span id="165">165</span>
 <span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">archive</span>::{<span class="ident">Archivable</span>, <span class="ident">Archive</span>},
-    <span class="ident">constant</span>::<span class="kw-2">*</span>,
+    <span class="ident">constants</span>::<span class="kw-2">*</span>,
     <span class="ident">PakVersion</span>,
 };
 
+<span class="doccomment">/// FPakInfo archivable</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PakInfo</span> {
     <span class="doccomment">/// Pak file magic value.</span>
@@ -194,7 +192,6 @@
     <span class="doccomment">/// Flag indicating if the pak index has been encrypted.</span>
     <span class="kw">pub</span> <span class="ident">encrypted_index</span>: <span class="ident">bool</span>,
     <span class="doccomment">/// Flag indicating if the pak index has been frozen</span>
-    <span class="doccomment">/// @todo loadtime: we should find a way to unload the index - potentially make two indices, the full one and unloaded one? unclear how, but at least we now have an option to choose per-platform</span>
     <span class="kw">pub</span> <span class="ident">index_is_frozen</span>: <span class="ident">bool</span>,
     <span class="doccomment">/// Encryption key guid. Empty if we should use the embedded key.</span>
     <span class="kw">pub</span> <span class="ident">encryption_key_guid</span>: [<span class="ident">u32</span>; <span class="number">4</span>],
@@ -220,10 +217,7 @@
 
 <span class="kw">impl</span> <span class="ident">PakInfo</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">version</span>: <span class="ident">PakVersion</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">version</span>,
-            ..<span class="ident">Default</span>::<span class="ident">default</span>()
-        }
+        <span class="self">Self</span> { <span class="ident">version</span>, ..<span class="ident">Default</span>::<span class="ident">default</span>() }
     }
 }
 
@@ -248,7 +242,7 @@
         <span class="kw">if</span> <span class="ident">version</span> <span class="op">!</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">version</span>.<span class="ident">raw</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(
                 <span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidInput</span>,
-                <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;magic {:x} is not {:x}&quot;</span>, <span class="self">self</span>.<span class="ident">magic</span>, <span class="ident">PAK_FILE_MAGIC</span>),
+                <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;version {} is not {}&quot;</span>, <span class="self">self</span>.<span class="ident">version</span>, <span class="ident">version</span>),
             ));
         }
 
@@ -256,7 +250,7 @@
         <span class="self">self</span>.<span class="ident">index_size</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">hash</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">if</span> <span class="ident">ar</span>.<span class="ident">is_loading</span>() {
+        <span class="kw">if</span> <span class="ident">ar</span>.<span class="ident">is_reader</span>() {
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">version</span> <span class="op">&lt;</span> <span class="ident">PakVersion</span>::<span class="ident">IndexEncryption</span> {
                 <span class="self">self</span>.<span class="ident">encrypted_index</span> <span class="op">=</span> <span class="bool-val">false</span>;
             }
@@ -281,7 +275,7 @@
                 <span class="ident">buffer</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>[..<span class="ident">LEN</span> <span class="op">-</span> <span class="ident">COMPRESSION_METHOD_NAME_LEN</span>];
             }
 
-            <span class="kw">if</span> <span class="ident">ar</span>.<span class="ident">is_loading</span>() {
+            <span class="kw">if</span> <span class="ident">ar</span>.<span class="ident">is_reader</span>() {
                 <span class="ident">buffer</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">0</span>;
                 <span class="kw">while</span> <span class="ident">i</span> <span class="op">&lt;</span> <span class="ident">buffer</span>.<span class="ident">len</span>() {
