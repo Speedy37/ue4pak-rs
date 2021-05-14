@@ -1,0 +1,21 @@
+{
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "files.trimTrailingWhitespace": true,
+    "files.trimFinalNewlines": true,
+    "files.insertFinalNewline": true,
+    "editor.rulers": [80, 100],
+    "[markdown]": {
+        "editor.wordWrap": "wordWrapColumn",
+        "editor.wordWrapColumn": 100,
+        "editor.quickSuggestions": false,
+        "files.trimTrailingWhitespace": false,
+        "files.trimFinalNewlines": true
+    },
+    "[rust]": {
+        "editor.formatOnSave": true
+    },
+    "[yaml]": {
+        "editor.tabSize": 2
+    }
+}
