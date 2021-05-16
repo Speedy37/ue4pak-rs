@@ -1,11 +1,17 @@
-use std::io;
+use core::slice;
+use std::io::{self, Write};
+
+use aes::cipher::generic_array::GenericArray;
+use block_modes::BlockMode;
+use sha1::digest::generic_array::typenum::Unsigned;
 
 use crate::archive::{Archivable, Archive, ArchiveLenSha1};
 use crate::pakentry::FLAG_DELETED;
 use crate::pakindex::PakIndex;
 use crate::pakindexv1::PakIndexV1;
 use crate::pakindexv2::PakIndexV2;
-use crate::{PakEntry, PakFile, PakInfo, PakVersion};
+use crate::{aes256_base64_key, aes256_ecb_cipher, Aes256BlockSize};
+use crate::{Aes256Cipher, Aes256Key, PakEntry, PakFile, PakInfo, PakVersion};
 
 /// Aligns to the nearest higher multiple of `alignment`
 fn align_arbitrary(v: u64, alignment: u64) -> u64 {
@@ -15,7 +21,20 @@ fn align_arbitrary(v: u64, alignment: u64) -> u64 {
     }
 }
 
+pub struct Cipher {
+    cipher: Aes256Cipher,
+    buf: GenericArray<u8, Aes256BlockSize>,
+    pending: usize,
+}
+
+impl Cipher {
+    pub fn new(cipher: Aes256Cipher) -> Self {
+        Self { cipher, buf: Default::default(), pending: 0 }
+    }
+}
+
 pub struct AssetWriter<'a, A: Archive> {
+    cipher: Option<Cipher>,
     builder: &'a mut PakFileBuilder,
     ar: ArchiveLenSha1<A>,
     name: String,
@@ -33,6 +52,20 @@ impl<'a, A: Archive> AssetWriter<'a, A> {
     }
 
     pub fn finalize(mut self) -> io::Result<&'a mut PakEntry> {
+        if let Some(cipher) = &mut self.cipher {
+            if cipher.pending > 0 {
+                let zeros = GenericArray::<u8, Aes256BlockSize>::default();
+                let n = cipher.buf.len() - cipher.pending;
+                cipher.buf[cipher.pending..].copy_from_slice(&zeros[..n]);
+                cipher.cipher.encrypt_blocks(slice::from_mut(&mut cipher.buf));
+                self.ar.write_all(&cipher.buf)?;
+                self.builder.pos += Aes256BlockSize::U64;
+                self.entry.uncompressed_size += Aes256BlockSize::U64;
+                cipher.pending = 0;
+            }
+        }
+
+        self.flush()?;
         let (size, hash) = self.ar.len_sha1();
         if self.import {
             if self.entry.size != size {
@@ -62,11 +95,27 @@ impl<'a, A: Archive> io::Write for AssetWriter<'a, A> {
         Ok(buf.len())
     }
 
-    fn write_all(&mut self, buf: &[u8]) -> io::Result<()> {
-        self.ar.write_all(buf)?;
-        let len = buf.len() as u64;
-        self.builder.pos += len;
-        self.entry.uncompressed_size += len;
+    fn write_all(&mut self, mut buf: &[u8]) -> io::Result<()> {
+        if let Some(cipher) = &mut self.cipher {
+            while !buf.is_empty() {
+                let n = (cipher.buf.len() - cipher.pending).min(buf.len());
+                cipher.buf[cipher.pending..].copy_from_slice(&buf[..n]);
+                cipher.pending += n;
+                if cipher.pending == Aes256BlockSize::USIZE {
+                    cipher.cipher.encrypt_blocks(slice::from_mut(&mut cipher.buf));
+                    self.ar.write_all(&cipher.buf)?;
+                    self.builder.pos += Aes256BlockSize::U64;
+                    self.entry.uncompressed_size += Aes256BlockSize::U64;
+                }
+                buf = &buf[n..];
+            }
+            //cipher.en
+        } else {
+            self.ar.write_all(buf)?;
+            let len = buf.len() as u64;
+            self.builder.pos += len;
+            self.entry.uncompressed_size += len;
+        }
         Ok(())
     }
 
@@ -79,11 +128,17 @@ pub struct PakFileBuilder {
     pos: u64,
     info: PakInfo,
     index: PakIndexV1,
+    key: Option<Aes256Key>,
 }
 
 impl PakFileBuilder {
     pub fn new(version: PakVersion) -> Self {
-        Self { pos: 0, info: PakInfo::new(version), index: PakIndexV1::default() }
+        Self { pos: 0, info: PakInfo::new(version), index: PakIndexV1::default(), key: None }
+    }
+
+    pub fn encrypted(&mut self, key: &str) -> io::Result<()> {
+        self.key = Some(aes256_base64_key(key)?);
+        Ok(())
     }
 
     /// Write the index and info blocks
@@ -117,6 +172,7 @@ impl PakFileBuilder {
             } else {
                 PakIndex::V1(self.index)
             },
+            key: self.key,
         };
         Ok(pak)
     }
@@ -149,6 +205,10 @@ impl PakFileBuilder {
         }
     }
 
+    fn cipher(&self) -> Option<Cipher> {
+        self.key.as_ref().map(|key| Cipher::new(aes256_ecb_cipher(key)))
+    }
+
     pub fn import<A: Archive>(
         &mut self,
         ar: A,
@@ -156,12 +216,16 @@ impl PakFileBuilder {
         mut entry: PakEntry,
     ) -> AssetWriter<'_, A> {
         entry.offset = self.pos;
-        AssetWriter { builder: self, ar: ArchiveLenSha1::new(ar), name, entry, import: true }
+        let ar = ArchiveLenSha1::new(ar);
+        let cipher = self.cipher();
+        AssetWriter { builder: self, ar, name, entry, import: true, cipher }
     }
 
     pub fn add<A: Archive>(&mut self, ar: A, name: String) -> AssetWriter<'_, A> {
         let entry = PakEntry { offset: self.pos, ..PakEntry::default() };
-        AssetWriter { builder: self, ar: ArchiveLenSha1::new(ar), name, entry, import: false }
+        let ar = ArchiveLenSha1::new(ar);
+        let cipher = self.cipher();
+        AssetWriter { builder: self, ar, name, entry, import: false, cipher }
     }
 
     pub fn deleted(&mut self, name: &str) -> io::Result<&mut PakEntry> {

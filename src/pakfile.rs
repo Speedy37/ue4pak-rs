@@ -1,7 +1,6 @@
 use std::{convert::TryFrom, io};
 
-use aes::cipher::generic_array::GenericArray;
-use aes::{Aes256, BlockCipher, NewBlockCipher};
+use aes::Aes256;
 use block_modes::block_padding::NoPadding;
 use block_modes::{BlockMode, Ecb};
 use log::{debug, trace};
@@ -11,14 +10,12 @@ use crate::archive::{Archivable, Archive, ArchiveLenSha1, ArchiveReader};
 use crate::pakindex::PakIndex;
 use crate::pakindexv1::PakIndexV1;
 use crate::pakindexv2::PakIndexV2;
-use crate::{PakInfo, PakVersion};
-
-type Aes256KeySize = <Aes256 as NewBlockCipher>::KeySize;
-type Aes256BlockSize = <Aes256 as BlockCipher>::BlockSize;
-type Aes256Key = GenericArray<u8, Aes256KeySize>;
+use crate::{aes256_base64_key, aes256_ecb_cipher};
+use crate::{Aes256BlockSize, Aes256Key, PakInfo, PakVersion};
 
 #[derive(Debug)]
 pub struct PakFile {
+    pub(crate) key: Option<Aes256Key>,
     pub(crate) info: PakInfo,
     pub(crate) index: PakIndex,
 }
@@ -45,8 +42,9 @@ impl PakFile {
         versions: impl Iterator<Item = PakVersion>,
     ) -> io::Result<Self> {
         let info = Self::de_pakinfo_versions(ar, versions)?;
-        let index = Self::load_index(&info, ar, key)?;
-        Ok(Self { info, index })
+        let key = Some(aes256_base64_key(key)?);
+        let index = Self::load_index(&info, ar, &key)?;
+        Ok(Self { info, index, key })
     }
 
     pub fn info(&self) -> &PakInfo {
@@ -55,6 +53,11 @@ impl PakFile {
 
     pub fn index(&self) -> &PakIndex {
         &self.index
+    }
+
+    /// Create a new cipher that can encrypt/decrypt entry
+    pub fn cipher(&self) -> Option<Ecb<Aes256, NoPadding>> {
+        self.key.as_ref().map(aes256_ecb_cipher)
     }
 
     fn decrypt_index(
@@ -66,7 +69,7 @@ impl PakFile {
             usize::try_from(size).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
         let mut block = vec![0u8; index_size];
         ar.read_exact(&mut block)?;
-        let cipher = Ecb::<Aes256, NoPadding>::new_fix(key, &Default::default());
+        let cipher = aes256_ecb_cipher(key);
         cipher.decrypt(&mut block).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
         Ok(ArchiveReader(io::Cursor::new(block)))
     }
@@ -74,7 +77,7 @@ impl PakFile {
     fn load_index<A: Archive + io::Seek>(
         info: &PakInfo,
         ar: &mut A,
-        key: &str,
+        key: &Option<Aes256Key>,
     ) -> io::Result<PakIndex> {
         trace!("trying to decode PakIndex at {:x} (size: {})", info.index_offset, info.index_size,);
         ar.seek(io::SeekFrom::Start(info.index_offset))?;
@@ -86,40 +89,34 @@ impl PakFile {
             ));
         }
         if info.encrypted_index {
-            let key =
-                base64::decode(key).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
-            if key.len() != Aes256KeySize::USIZE {
+            if let Some(key) = key {
+                let mut decrypted_ar = Self::decrypt_index(ar, info.index_size, &key)?;
+                Self::_load_index(
+                    info,
+                    &mut decrypted_ar,
+                    move |decrypted_ar, offset, size| {
+                        ar.seek(io::SeekFrom::Start(offset))?;
+                        *decrypted_ar = Self::decrypt_index(ar, size, &key)?;
+                        Ok(())
+                    },
+                    |sha1_ar, size| {
+                        if sha1_ar.len() < size {
+                            let pad_size = size - sha1_ar.len();
+                            if pad_size < Aes256BlockSize::U64 {
+                                // read at most one block size
+                                let mut b = [0u8; Aes256BlockSize::USIZE];
+                                sha1_ar.read_exact(&mut b[0..pad_size as usize])?;
+                            }
+                        }
+                        Ok(())
+                    },
+                )
+            } else {
                 return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!(
-                        "invalid base64 key size, found a {} bytes key, expecting a {} bytes key",
-                        key.len(),
-                        Aes256KeySize::USIZE
-                    ),
+                    io::ErrorKind::InvalidInput,
+                    "PakFile is encrypted and no decryption key provided",
                 ));
             }
-            let key = Aes256Key::from_slice(&key);
-            let mut decrypted_ar = Self::decrypt_index(ar, info.index_size, &key)?;
-            Self::_load_index(
-                info,
-                &mut decrypted_ar,
-                move |decrypted_ar, offset, size| {
-                    ar.seek(io::SeekFrom::Start(offset))?;
-                    *decrypted_ar = Self::decrypt_index(ar, size, &key)?;
-                    Ok(())
-                },
-                |sha1_ar, size| {
-                    if sha1_ar.len() < size {
-                        let pad_size = size - sha1_ar.len();
-                        if pad_size < Aes256BlockSize::U64 {
-                            // read at most one block size
-                            let mut b = [0u8; Aes256BlockSize::USIZE];
-                            sha1_ar.read_exact(&mut b[0..pad_size as usize])?;
-                        }
-                    }
-                    Ok(())
-                },
-            )
         } else {
             Self::_load_index(
                 info,

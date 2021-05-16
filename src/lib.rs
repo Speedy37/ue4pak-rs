@@ -8,12 +8,41 @@ mod pakindexv1;
 mod pakindexv2;
 mod pakinfo;
 
-use std::fmt;
+use std::{fmt, io};
 
+use aes::cipher::generic_array::GenericArray;
+use aes::{Aes256, BlockCipher, NewBlockCipher};
+use block_modes::block_padding::NoPadding;
+use block_modes::{BlockMode, Ecb};
 pub use pakbuilder::{AssetWriter, PakFileBuilder};
 pub use pakentry::{PakCompressedBlock, PakEntry};
 pub use pakfile::PakFile;
 pub use pakinfo::PakInfo;
+use sha1::digest::generic_array::typenum::Unsigned;
+
+type Aes256KeySize = <Aes256 as NewBlockCipher>::KeySize;
+type Aes256BlockSize = <Aes256 as BlockCipher>::BlockSize;
+type Aes256Key = GenericArray<u8, Aes256KeySize>;
+type Aes256Cipher = Ecb<Aes256, NoPadding>;
+
+fn aes256_base64_key(key: &str) -> io::Result<Aes256Key> {
+    let key = base64::decode(key).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
+    if key.len() != Aes256KeySize::USIZE {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "invalid base64 key size, found a {} bytes key, expecting a {} bytes key",
+                key.len(),
+                Aes256KeySize::USIZE
+            ),
+        ));
+    }
+    Ok(Aes256Key::from_slice(&key).clone())
+}
+
+fn aes256_ecb_cipher(key: &Aes256Key) -> Aes256Cipher {
+    Ecb::<Aes256, NoPadding>::new_fix(key, &Default::default())
+}
 
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub enum PakVersion {
@@ -26,7 +55,6 @@ pub enum PakVersion {
     EncryptionKeyGuid,
     /// in 4.22:
     /// - MAX_NUM_COMPRESSION_METHODS was 4 but since 4.23 it is 5
-    /// -
     FNameBasedCompressionMethod422,
     FNameBasedCompressionMethod,
     FrozenIndex,

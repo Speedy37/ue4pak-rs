@@ -25,7 +25,7 @@ pub struct PakInfo {
     pub index_is_frozen: bool,
     /// Encryption key guid. Empty if we should use the embedded key.
     pub encryption_key_guid: [u32; 4],
-    /// Compression methods used in this pak file (FNames, saved as FStrings)
+    /// Compression methods used in this pak file (i.e. "Zlib", "Gzip", "LZ4", "Oodle", ...)
     pub compression_methods: Vec<String>,
 }
 
