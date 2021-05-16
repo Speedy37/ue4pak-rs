@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::{collections::BTreeMap, io};
 use std::{fmt, mem};
@@ -110,7 +111,7 @@ pub struct PakIndexV2 {
 
     /// FPakEntries that have been serialized into a compacted format in an array of bytes.
     encoded_pak_entries: Vec<u8>,
-    decoded_pak_entries: Vec<PakEntry>,
+    decoded_pak_entries: HashMap<usize, PakEntry>,
 
     pub has_path_hash_index: bool,
     path_hash_index_offset: i64,
@@ -169,11 +170,12 @@ impl PakIndexV2 {
         entry: PakEntry,
         version: PakVersion,
     ) -> io::Result<PakEntryLocation> {
-        let mut location = RawPakEntryLocation::from_offset(self.encoded_pak_entries.len());
+        let offset = self.encoded_pak_entries.len();
+        let mut location = RawPakEntryLocation::from_offset(offset);
         let cursor = io::Cursor::new(&mut self.encoded_pak_entries);
         let mut ar = ArchiveWriter(cursor);
         if Self::encode_entry(&mut ar, &entry, version)? {
-            self.decoded_pak_entries.push(entry);
+            self.decoded_pak_entries.insert(offset, entry);
         } else {
             location = RawPakEntryLocation::from_index(self.files.len());
             self.files.push(entry);
@@ -218,8 +220,24 @@ impl PakIndexV2 {
         Ok(location.get())
     }
 
+    pub fn hashed_entries(&self) -> impl Iterator<Item = (u64, &PakEntry)> + '_ {
+        self.path_hash_index.iter().flat_map(move |(hash, location)| match location.get() {
+            PakEntryLocation::Deleted => None,
+            PakEntryLocation::Offset(i) => {
+                Some((*hash, self.decoded_pak_entries.get(&i).expect("a valid offset")))
+            }
+            PakEntryLocation::Index(i) => Some((*hash, &self.files[i])),
+        })
+    }
+
     pub fn entries(&self) -> impl Iterator<Item = &PakEntry> {
-        self.decoded_pak_entries.iter().chain(self.files.iter())
+        self.path_hash_index.values().flat_map(move |location| match location.get() {
+            PakEntryLocation::Deleted => None,
+            PakEntryLocation::Offset(i) => {
+                Some(self.decoded_pak_entries.get(&i).expect("a valid offset"))
+            }
+            PakEntryLocation::Index(i) => Some(&self.files[i]),
+        })
     }
 
     pub fn pruned_entries(&self) -> impl Iterator<Item = (&str, &str, PakEntryLocation)> {
@@ -349,11 +367,11 @@ impl PakIndexV2 {
                         }
                         let cursor = io::Cursor::new(&self.encoded_pak_entries[offset..]);
                         let mut ar = ArchiveReader(cursor);
-                        Some(Self::decode_entry(&mut ar, version))
+                        Some(Self::decode_entry(&mut ar, version).map(|entry| (offset, entry)))
                     }
                     _ => None,
                 })
-                .collect::<Result<Vec<_>, _>>()?;
+                .collect::<Result<_, _>>()?;
         }
         Ok(())
     }
