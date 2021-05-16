@@ -4,6 +4,8 @@ mod pakbuilder;
 mod pakentry;
 mod pakfile;
 mod pakindex;
+mod pakindexv1;
+mod pakindexv2;
 mod pakinfo;
 
 use std::fmt;
@@ -28,6 +30,8 @@ pub enum PakVersion {
     FNameBasedCompressionMethod422,
     FNameBasedCompressionMethod,
     FrozenIndex,
+    PathHashIndex,
+    Fnv64BugFix,
 }
 
 impl fmt::Display for PakVersion {
@@ -58,6 +62,8 @@ impl PakVersion {
             PakVersion::FNameBasedCompressionMethod422,
             PakVersion::FNameBasedCompressionMethod,
             PakVersion::FrozenIndex,
+            PakVersion::PathHashIndex,
+            PakVersion::Fnv64BugFix,
         ]
     }
 
@@ -73,6 +79,8 @@ impl PakVersion {
             PakVersion::FNameBasedCompressionMethod422 => 8,
             PakVersion::FNameBasedCompressionMethod => 8,
             PakVersion::FrozenIndex => 9,
+            PakVersion::PathHashIndex => 10,
+            PakVersion::Fnv64BugFix => 11,
         }
     }
 }

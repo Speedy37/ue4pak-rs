@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::convert::TryFrom;
 use std::{io, mem};
 
@@ -96,6 +97,18 @@ impl<F: io::Write> Archive for io::BufWriter<F> {
     }
 }
 
+impl<F: io::Seek> io::Seek for ArchiveReader<F> {
+    fn seek(&mut self, pos: io::SeekFrom) -> io::Result<u64> {
+        self.0.seek(pos)
+    }
+}
+
+impl<F: io::Read> io::Read for ArchiveReader<F> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        self.0.read(buf)
+    }
+}
+
 impl<F: io::Read> Archive for ArchiveReader<F> {
     fn is_reader(&self) -> bool {
         true
@@ -107,6 +120,22 @@ impl<F: io::Read> Archive for ArchiveReader<F> {
 
     fn read_exact(&mut self, buf: &mut [u8]) -> io::Result<()> {
         io::Read::read_exact(&mut self.0, buf)
+    }
+}
+
+impl<F: io::Seek> io::Seek for ArchiveWriter<F> {
+    fn seek(&mut self, pos: io::SeekFrom) -> io::Result<u64> {
+        self.0.seek(pos)
+    }
+}
+
+impl<F: io::Write> io::Write for ArchiveWriter<F> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.0.write(buf)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.0.flush()
     }
 }
 
@@ -125,13 +154,73 @@ impl<F: io::Write> Archive for ArchiveWriter<F> {
 }
 
 /// A data structure that can be archived (encoded/decoded)
-pub trait Archivable {
+pub trait Archivable: 'static {
     fn ser_de<A: Archive>(&mut self, ar: &mut A) -> io::Result<()>;
 
     fn ser_de_len(&mut self) -> u64 {
         let mut ar = ArchiveLen::new();
         self.ser_de(&mut ar).unwrap();
         ar.len()
+    }
+
+    fn ser<A: Archive>(&self, ar: &mut A) -> io::Result<()>
+    where
+        Self: Clone,
+    {
+        self.clone().ser_de(ar)
+    }
+
+    fn ser_len(&self) -> u64
+    where
+        Self: Clone,
+    {
+        let mut ar = ArchiveLen::new();
+        self.ser(&mut ar).unwrap();
+        ar.len()
+    }
+
+    fn de<A: Archive>(ar: &mut A) -> io::Result<Self>
+    where
+        Self: Default,
+    {
+        let mut v = Self::default();
+        v.ser_de(ar)?;
+        Ok(v)
+    }
+}
+
+pub trait ArchivableWith<E> {
+    fn ser_de_with<A: Archive>(&mut self, ar: &mut A, extra: E) -> io::Result<()>;
+
+    fn ser_de_len_with(&mut self, extra: E) -> u64 {
+        let mut ar = ArchiveLen::new();
+        self.ser_de_with(&mut ar, extra).unwrap();
+        ar.len()
+    }
+
+    fn ser_with<A: Archive>(&self, ar: &mut A, extra: E) -> io::Result<()>
+    where
+        Self: Clone,
+    {
+        self.clone().ser_de_with(ar, extra)
+    }
+
+    fn ser_len_with(&self, extra: E) -> u64
+    where
+        Self: Clone,
+    {
+        let mut ar = ArchiveLen::new();
+        self.ser_with(&mut ar, extra).unwrap();
+        ar.len()
+    }
+
+    fn de_with<A: Archive>(ar: &mut A, extra: E) -> io::Result<Self>
+    where
+        Self: Default,
+    {
+        let mut v = Self::default();
+        v.ser_de_with(ar, extra)?;
+        Ok(v)
     }
 }
 
@@ -159,9 +248,51 @@ impl<T: Archivable + Default> Archivable for Vec<T> {
         let mut len =
             u32::try_from(self.len()).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
         len.ser_de(ar)?;
-        self.resize_with(len as usize, Default::default);
+        if ar.is_reader() {
+            self.clear();
+            self.resize_with(len as usize, Default::default);
+        }
         for item in self {
             item.ser_de(ar)?;
+        }
+        Ok(())
+    }
+}
+impl<E: Copy, T: ArchivableWith<E> + Default> ArchivableWith<E> for Vec<T> {
+    fn ser_de_with<A: Archive>(&mut self, ar: &mut A, extra: E) -> io::Result<()> {
+        let mut len =
+            u32::try_from(self.len()).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
+        len.ser_de(ar)?;
+        if ar.is_reader() {
+            self.clear();
+            self.resize_with(len as usize, Default::default);
+        }
+        for item in self {
+            item.ser_de_with(ar, extra)?;
+        }
+        Ok(())
+    }
+}
+
+impl<K: Archivable + Default + Clone + Ord, V: Archivable + Default> Archivable for BTreeMap<K, V> {
+    fn ser_de<A: Archive>(&mut self, ar: &mut A) -> io::Result<()> {
+        let mut len =
+            u32::try_from(self.len()).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
+        len.ser_de(ar)?;
+        if ar.is_reader() {
+            self.clear();
+            for _ in 0..len {
+                let mut key = K::default();
+                key.ser_de(ar)?;
+                let mut value = V::default();
+                value.ser_de(ar)?;
+                self.insert(key, value);
+            }
+        } else {
+            for (key, value) in self {
+                key.clone().ser_de(ar)?;
+                value.ser_de(ar)?
+            }
         }
         Ok(())
     }
@@ -188,12 +319,12 @@ doit!(u8, u16, u32, u64, i8, i16, i32, i64, usize);
 impl Archivable for bool {
     fn ser_de<A: Archive>(&mut self, ar: &mut A) -> io::Result<()> {
         if ar.is_reader() {
-            let mut v = 0u8;
+            let mut v = 0u32;
             v.ser_de(ar)?;
             *self = v != 0;
             Ok(())
         } else {
-            (*self as u8).ser_de(ar)
+            (*self as u32).ser_de(ar)
         }
     }
 }

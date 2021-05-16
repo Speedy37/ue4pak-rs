@@ -2,12 +2,12 @@ use std::io;
 
 use sha1::{Digest, Sha1};
 
-use crate::{
-    archive::{Archivable, Archive},
-    pakentry::FLAG_DELETED,
-    pakindex::PakIndex,
-    PakEntry, PakFile, PakInfo, PakVersion,
-};
+use crate::archive::{Archivable, Archive};
+use crate::pakentry::FLAG_DELETED;
+use crate::pakindex::PakIndex;
+use crate::pakindexv1::PakIndexV1;
+use crate::pakindexv2::PakIndexV2;
+use crate::{PakEntry, PakFile, PakInfo, PakVersion};
 
 struct Sha1Writer<W> {
     ar: W,
@@ -130,16 +130,17 @@ impl<'a, A: Archive> io::Write for AssetWriter<'a, A> {
 pub struct PakFileBuilder {
     pos: u64,
     info: PakInfo,
-    index: PakIndex,
+    index: PakIndexV1,
 }
 
 impl PakFileBuilder {
     pub fn new(version: PakVersion) -> Self {
-        Self { pos: 0, info: PakInfo::new(version), index: PakIndex::default() }
+        Self { pos: 0, info: PakInfo::new(version), index: PakIndexV1::default() }
     }
 
     /// Write the index and info blocks
     pub fn finalize<A: Archive>(mut self, ar: &mut A) -> io::Result<PakFile> {
+        let version = self.info.version;
         self.info.index_offset = self.pos;
 
         let mut sha1_ar = Sha1Writer::new(&mut *ar);
@@ -149,14 +150,25 @@ impl PakFileBuilder {
                 "frozen index is not supported and is deprecated since UE4.26",
             ));
         } else {
-            self.index.ser_de(&mut sha1_ar, self.info.version)?;
+            self.index.ser_de(&mut sha1_ar, version)?;
         }
 
         self.info.index_size = sha1_ar.bytes;
         self.info.hash = sha1_ar.sha1();
         self.info.ser_de(ar)?;
 
-        let pak = PakFile { info: self.info, index: self.index };
+        let pak = PakFile {
+            info: self.info,
+            index: if version >= PakVersion::PathHashIndex {
+                let mut v2 = PakIndexV2::default();
+                for (name, entry) in self.index.take_entries() {
+                    v2.add(name, entry, version)?;
+                }
+                PakIndex::V2(v2)
+            } else {
+                PakIndex::V1(self.index)
+            },
+        };
         Ok(pak)
     }
 

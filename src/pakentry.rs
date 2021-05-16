@@ -1,10 +1,8 @@
 use std::io;
 
-use crate::{
-    archive::{Archivable, Archive, ArchiveLen},
-    constants::*,
-    PakVersion,
-};
+use crate::archive::{Archivable, ArchivableWith, Archive};
+use crate::constants::*;
+use crate::PakVersion;
 
 pub const FLAG_ENCRYPTED: u8 = 0x01;
 pub const FLAG_DELETED: u8 = 0x02;
@@ -38,14 +36,9 @@ impl PakEntry {
     pub fn is_deleted(&self) -> bool {
         (self.flags & FLAG_DELETED) == FLAG_DELETED
     }
-
-    pub fn ser_de_len(&mut self, version: PakVersion) -> u64 {
-        let mut ar = ArchiveLen::new();
-        self.ser_de(&mut ar, version).unwrap();
-        ar.len()
-    }
-
-    pub fn ser_de<A: Archive>(&mut self, ar: &mut A, version: PakVersion) -> io::Result<()> {
+}
+impl ArchivableWith<PakVersion> for PakEntry {
+    fn ser_de_with<A: Archive>(&mut self, ar: &mut A, version: PakVersion) -> io::Result<()> {
         self.offset.ser_de(ar)?;
         self.size.ser_de(ar)?;
         self.uncompressed_size.ser_de(ar)?;
@@ -90,8 +83,8 @@ impl PakEntry {
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct PakCompressedBlock {
-    pub compressed_start: i64,
-    pub compressed_end: i64,
+    pub compressed_start: u64,
+    pub compressed_end: u64,
 }
 
 impl Archivable for PakCompressedBlock {

@@ -2,24 +2,34 @@ use std::{convert::TryFrom, io};
 
 use log::{debug, trace};
 
-use crate::{
-    archive::{Archivable, Archive},
-    pakindex::PakIndex,
-    PakInfo, PakVersion,
-};
+use crate::archive::{Archivable, Archive};
+use crate::pakindex::PakIndex;
+use crate::pakindexv1::PakIndexV1;
+use crate::pakindexv2::PakIndexV2;
+use crate::{PakInfo, PakVersion};
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct PakFile {
     pub(crate) info: PakInfo,
     pub(crate) index: PakIndex,
 }
 
 impl PakFile {
-    pub fn new<A: Archive + io::Seek>(ar: &mut A) -> io::Result<Self> {
-        let info = Self::de_pakinfo(ar)?;
-        let mut this = Self { info, index: PakIndex::default() };
-        this.load_index(ar)?;
-        Ok(this)
+    pub fn new(version: PakVersion) -> Self {
+        Self { info: PakInfo::new(version), index: PakIndex::new(version) }
+    }
+
+    pub fn autodetect<A: Archive + io::Seek>(ar: &mut A) -> io::Result<Self> {
+        Self::with_versions(ar, PakVersion::list().iter().rev().copied())
+    }
+
+    pub fn with_versions<A: Archive + io::Seek>(
+        ar: &mut A,
+        versions: impl Iterator<Item = PakVersion>,
+    ) -> io::Result<Self> {
+        let info = Self::de_pakinfo_versions(ar, versions)?;
+        let index = Self::load_index(&info, ar)?;
+        Ok(Self { info, index })
     }
 
     pub fn info(&self) -> &PakInfo {
@@ -30,35 +40,39 @@ impl PakFile {
         &self.index
     }
 
-    fn load_index<A: Archive + io::Seek>(&mut self, ar: &mut A) -> io::Result<()> {
-        trace!(
-            "trying to decode PakIndex at {:x} (size: {})",
-            self.info.index_offset,
-            self.info.index_size,
-        );
-        ar.seek(io::SeekFrom::Start(self.info.index_offset))?;
+    fn load_index<A: Archive + io::Seek>(info: &PakInfo, ar: &mut A) -> io::Result<PakIndex> {
+        trace!("trying to decode PakIndex at {:x} (size: {})", info.index_offset, info.index_size,);
+        ar.seek(io::SeekFrom::Start(info.index_offset))?;
 
-        if self.info.version >= PakVersion::FrozenIndex && self.info.index_is_frozen {
+        if info.version >= PakVersion::FrozenIndex && info.index_is_frozen {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 "PakFile was frozen, this is not supported and UE4.26 also dropped the support",
             ));
-        } else if self.info.encrypted_index {
-            let index_size = usize::try_from(self.info.index_size)
+        } else if info.encrypted_index {
+            let index_size = usize::try_from(info.index_size)
                 .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
             let mut buffer = vec![0u8; index_size];
             buffer.ser_de(ar)?;
             todo!()
+        } else if info.version >= PakVersion::PathHashIndex {
+            let mut pak_index = PakIndexV2::default();
+            pak_index.de(ar, info.version)?;
+            Ok(PakIndex::V2(pak_index))
         } else {
-            self.index.ser_de(ar, self.info.version)?;
+            let mut pak_index = PakIndexV1::default();
+            pak_index.ser_de(ar, info.version)?;
+            Ok(PakIndex::V1(pak_index))
         }
-        Ok(())
     }
 
-    fn de_pakinfo<A: Archive + io::Seek>(ar: &mut A) -> io::Result<PakInfo> {
+    fn de_pakinfo_versions<A: Archive + io::Seek>(
+        ar: &mut A,
+        versions: impl Iterator<Item = PakVersion>,
+    ) -> io::Result<PakInfo> {
         let ar_len = ar.seek(io::SeekFrom::End(0))?;
 
-        for &version in PakVersion::list().iter().rev() {
+        for version in versions {
             let mut info = PakInfo::new(version);
             let info_len = info.ser_de_len();
             if info_len < ar_len {

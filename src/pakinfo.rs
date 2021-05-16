@@ -90,7 +90,7 @@ impl Archivable for PakInfo {
             }
         }
 
-        if self.version >= PakVersion::FrozenIndex {
+        if self.version == PakVersion::FrozenIndex {
             self.index_is_frozen.ser_de(ar)?;
         }
 

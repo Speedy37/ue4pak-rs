@@ -11,8 +11,8 @@ Supported versions:
 -   [x] `PakFile_Version_EncryptionKeyGuid = 7`
 -   [x] `PakFile_Version_FNameBasedCompressionMethod = 8`
 -   [x] `PakFile_Version_FrozenIndex = 9`
--   [ ] `PakFile_Version_PathHashIndex = 10`
--   [ ] `PakFile_Version_Fnv64BugFix = 11`
+-   [x] `PakFile_Version_PathHashIndex = 10`
+-   [x] `PakFile_Version_Fnv64BugFix = 11`
 
 Supported features:
 
