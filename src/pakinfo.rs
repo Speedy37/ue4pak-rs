@@ -58,7 +58,10 @@ impl Archivable for PakInfo {
             self.encryption_key_guid.ser_de(ar)?;
         }
 
-        self.encrypted_index.ser_de(ar)?;
+        let mut encrypted_index_u8 = u8::from(self.encrypted_index);
+        encrypted_index_u8.ser_de(ar)?;
+        self.encrypted_index = encrypted_index_u8 != 0;
+
         self.magic.ser_de(ar)?;
         if self.magic != PAK_FILE_MAGIC {
             return Err(io::Error::new(
@@ -91,7 +94,9 @@ impl Archivable for PakInfo {
         }
 
         if self.version == PakVersion::FrozenIndex {
-            self.index_is_frozen.ser_de(ar)?;
+            let mut index_is_frozen_u8 = u8::from(self.index_is_frozen);
+            index_is_frozen_u8.ser_de(ar)?;
+            self.index_is_frozen = index_is_frozen_u8 != 0;
         }
 
         if self.version < PakVersion::FNameBasedCompressionMethod422 {
