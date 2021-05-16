@@ -150,6 +150,9 @@
 <span id="147">147</span>
 <span id="148">148</span>
 <span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">/// Raw FArchive tools</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">archive</span>;
@@ -170,6 +173,9 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">pakbuilder</span>::{<span class="ident">AssetWriter</span>, <span class="ident">PakFileBuilder</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">pakentry</span>::{<span class="ident">PakCompressedBlock</span>, <span class="ident">PakEntry</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">pakfile</span>::<span class="ident">PakFile</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">pakindex</span>::<span class="ident">PakIndex</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">pakindexv1</span>::<span class="ident">PakIndexV1</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">pakindexv2</span>::<span class="ident">PakIndexV2</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">pakinfo</span>::<span class="ident">PakInfo</span>;
 <span class="kw">use</span> <span class="ident">sha1</span>::<span class="ident">digest</span>::<span class="ident">generic_array</span>::<span class="ident">typenum</span>::<span class="ident">Unsigned</span>;
 
