@@ -17,6 +17,7 @@ Supported versions:
 Supported features:
 
 -   [ ] compression
+-   [x] decryption
 -   [ ] encryption
 -   [ ] frozen index (UE4.26 dropped it's support)
 

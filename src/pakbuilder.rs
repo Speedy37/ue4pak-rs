@@ -1,62 +1,11 @@
 use std::io;
 
-use sha1::{Digest, Sha1};
-
-use crate::archive::{Archivable, Archive};
+use crate::archive::{Archivable, Archive, ArchiveLenSha1};
 use crate::pakentry::FLAG_DELETED;
 use crate::pakindex::PakIndex;
 use crate::pakindexv1::PakIndexV1;
 use crate::pakindexv2::PakIndexV2;
 use crate::{PakEntry, PakFile, PakInfo, PakVersion};
-
-struct Sha1Writer<W> {
-    ar: W,
-    bytes: u64,
-    sha1: Sha1,
-}
-
-impl<W> Sha1Writer<W> {
-    fn new(ar: W) -> Self {
-        Self { ar, bytes: 0, sha1: Sha1::new() }
-    }
-
-    pub fn get_mut(&mut self) -> &mut W {
-        &mut self.ar
-    }
-
-    fn sha1(self) -> [u8; 20] {
-        self.sha1.finalize().into()
-    }
-}
-
-impl<A: Archive> Archive for Sha1Writer<A> {
-    fn is_reader(&self) -> bool {
-        self.ar.is_reader()
-    }
-
-    fn write_all(&mut self, buf: &[u8]) -> io::Result<()> {
-        self.ar.write_all(buf)?;
-        self.sha1.update(buf);
-        self.bytes += buf.len() as u64;
-        Ok(())
-    }
-
-    fn read_exact(&mut self, _buf: &mut [u8]) -> io::Result<()> {
-        unreachable!("read is not allowed while computing sha1")
-    }
-}
-
-impl<W: io::Write> io::Write for Sha1Writer<W> {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        let written = self.ar.write(buf)?;
-        self.sha1.update(&buf[0..written]);
-        Ok(written)
-    }
-
-    fn flush(&mut self) -> io::Result<()> {
-        self.ar.flush()
-    }
-}
 
 /// Aligns to the nearest higher multiple of `alignment`
 fn align_arbitrary(v: u64, alignment: u64) -> u64 {
@@ -68,7 +17,7 @@ fn align_arbitrary(v: u64, alignment: u64) -> u64 {
 
 pub struct AssetWriter<'a, A: Archive> {
     builder: &'a mut PakFileBuilder,
-    ar: Sha1Writer<A>,
+    ar: ArchiveLenSha1<A>,
     name: String,
     entry: PakEntry,
     import: bool,
@@ -84,8 +33,7 @@ impl<'a, A: Archive> AssetWriter<'a, A> {
     }
 
     pub fn finalize(mut self) -> io::Result<&'a mut PakEntry> {
-        let size = self.size();
-        let hash = self.ar.sha1();
+        let (size, hash) = self.ar.len_sha1();
         if self.import {
             if self.entry.size != size {
                 return Err(io::Error::new(
@@ -143,7 +91,7 @@ impl PakFileBuilder {
         let version = self.info.version;
         self.info.index_offset = self.pos;
 
-        let mut sha1_ar = Sha1Writer::new(&mut *ar);
+        let mut sha1_ar = ArchiveLenSha1::new(&mut *ar);
         if self.info.index_is_frozen {
             return Err(io::Error::new(
                 io::ErrorKind::Other,
@@ -153,8 +101,9 @@ impl PakFileBuilder {
             self.index.ser_de(&mut sha1_ar, version)?;
         }
 
-        self.info.index_size = sha1_ar.bytes;
-        self.info.hash = sha1_ar.sha1();
+        let (len, hash) = sha1_ar.len_sha1();
+        self.info.index_size = len;
+        self.info.index_hash = hash;
         self.info.ser_de(ar)?;
 
         let pak = PakFile {
@@ -207,12 +156,12 @@ impl PakFileBuilder {
         mut entry: PakEntry,
     ) -> AssetWriter<'_, A> {
         entry.offset = self.pos;
-        AssetWriter { builder: self, ar: Sha1Writer::new(ar), name, entry, import: true }
+        AssetWriter { builder: self, ar: ArchiveLenSha1::new(ar), name, entry, import: true }
     }
 
     pub fn add<A: Archive>(&mut self, ar: A, name: String) -> AssetWriter<'_, A> {
         let entry = PakEntry { offset: self.pos, ..PakEntry::default() };
-        AssetWriter { builder: self, ar: Sha1Writer::new(ar), name, entry, import: false }
+        AssetWriter { builder: self, ar: ArchiveLenSha1::new(ar), name, entry, import: false }
     }
 
     pub fn deleted(&mut self, name: &str) -> io::Result<&mut PakEntry> {

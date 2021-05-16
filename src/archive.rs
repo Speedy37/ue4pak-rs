@@ -2,6 +2,8 @@ use std::collections::BTreeMap;
 use std::convert::TryFrom;
 use std::{io, mem};
 
+use sha1::{Digest, Sha1};
+
 /// An archive reader or writer trait
 
 /// There is a single trait in order to simplify `Archivable` impls.
@@ -150,6 +152,62 @@ impl<F: io::Write> Archive for ArchiveWriter<F> {
 
     fn read_exact(&mut self, _buf: &mut [u8]) -> io::Result<()> {
         Err(io::Error::new(io::ErrorKind::PermissionDenied, "write only"))
+    }
+}
+
+pub(crate) struct ArchiveLenSha1<A> {
+    ar: A,
+    bytes: u64,
+    sha1: Sha1,
+}
+
+impl<A> ArchiveLenSha1<A> {
+    pub fn new(ar: A) -> Self {
+        Self { ar, bytes: 0, sha1: Sha1::new() }
+    }
+
+    pub fn get_mut(&mut self) -> &mut A {
+        &mut self.ar
+    }
+
+    pub fn len_sha1(&mut self) -> (u64, [u8; 20]) {
+        (std::mem::take(&mut self.bytes), std::mem::take(&mut self.sha1).finalize().into())
+    }
+
+    pub const fn len(&self) -> u64 {
+        self.bytes
+    }
+}
+
+impl<A: Archive> Archive for ArchiveLenSha1<A> {
+    fn is_reader(&self) -> bool {
+        self.ar.is_reader()
+    }
+
+    fn write_all(&mut self, buf: &[u8]) -> io::Result<()> {
+        self.ar.write_all(buf)?;
+        self.sha1.update(buf);
+        self.bytes += buf.len() as u64;
+        Ok(())
+    }
+
+    fn read_exact(&mut self, buf: &mut [u8]) -> io::Result<()> {
+        self.ar.read_exact(buf)?;
+        self.sha1.update(&*buf);
+        self.bytes += buf.len() as u64;
+        Ok(())
+    }
+}
+
+impl<W: io::Write> io::Write for ArchiveLenSha1<W> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        let written = self.ar.write(buf)?;
+        self.sha1.update(&buf[0..written]);
+        Ok(written)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.ar.flush()
     }
 }
 

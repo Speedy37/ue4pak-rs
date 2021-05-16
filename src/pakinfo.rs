@@ -18,7 +18,7 @@ pub struct PakInfo {
     /// Size (in bytes) of pak file index.
     pub index_size: u64,
     /// Index SHA1 value.
-    pub hash: [u8; 20],
+    pub index_hash: [u8; 20],
     /// Flag indicating if the pak index has been encrypted.
     pub encrypted_index: bool,
     /// Flag indicating if the pak index has been frozen
@@ -36,7 +36,7 @@ impl Default for PakInfo {
             version: PakVersion::Initial,
             index_offset: 0,
             index_size: 0,
-            hash: [0; 20],
+            index_hash: [0; 20],
             encrypted_index: false,
             index_is_frozen: false,
             encryption_key_guid: [0; 4],
@@ -78,7 +78,7 @@ impl Archivable for PakInfo {
 
         self.index_offset.ser_de(ar)?;
         self.index_size.ser_de(ar)?;
-        self.hash.ser_de(ar)?;
+        self.index_hash.ser_de(ar)?;
 
         if ar.is_reader() {
             if self.version < PakVersion::IndexEncryption {

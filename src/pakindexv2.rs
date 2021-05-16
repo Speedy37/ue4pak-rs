@@ -239,7 +239,7 @@ impl PakIndexV2 {
     }
 
     pub fn ser<A: Archive>(&mut self, ar: &mut A, version: PakVersion) -> io::Result<()> {
-        self.ser_de(ar, version, |_ar, _offset| {
+        self.ser_de(ar, version, |_ar, _offset, _size, _hash, _ctx| {
             Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "PakIndexV2::ser only supports writing mode",
@@ -248,15 +248,17 @@ impl PakIndexV2 {
     }
 
     pub fn de<A: Archive + io::Seek>(&mut self, ar: &mut A, version: PakVersion) -> io::Result<()> {
-        self.ser_de(ar, version, |ar, offset| ar.seek(io::SeekFrom::Start(offset)).map(|_| ()))
+        self.ser_de(ar, version, |ar, offset, _size, _hash, _ctx| {
+            ar.seek(io::SeekFrom::Start(offset)).map(|_| ())?;
+            Ok(())
+        })
     }
 
-    fn ser_de<A: Archive>(
-        &mut self,
-        ar: &mut A,
-        version: PakVersion,
-        seek: impl Fn(&mut A, u64) -> io::Result<()>,
-    ) -> io::Result<()> {
+    pub fn ser_de<A, F>(&mut self, ar: &mut A, version: PakVersion, mut seek: F) -> io::Result<()>
+    where
+        A: Archive,
+        F: FnMut(&mut A, u64, u64, [u8; 20], &'static str) -> io::Result<()>,
+    {
         self.mount_point.ser_de(ar)?;
         self.num_entries.ser_de(ar)?;
         self.path_hash_seed.ser_de(ar)?;
@@ -295,7 +297,13 @@ impl PakIndexV2 {
                 ));
             }
             if ar.is_reader() {
-                seek(ar, self.path_hash_index_offset as u64)?;
+                seek(
+                    ar,
+                    self.path_hash_index_offset as u64,
+                    self.path_hash_index_size as u64,
+                    self.path_hash_index_hash,
+                    "PathHashIndex",
+                )?;
             }
             self.path_hash_index.ser_de(ar)?;
             self.pruned_directory_index.ser_de(ar)?;
@@ -312,7 +320,13 @@ impl PakIndexV2 {
                 ));
             }
             if ar.is_reader() {
-                seek(ar, self.full_directory_index_offset as u64)?;
+                seek(
+                    ar,
+                    self.full_directory_index_offset as u64,
+                    self.full_directory_index_size as u64,
+                    self.full_directory_index_hash,
+                    "FullDirectoryIndex",
+                )?;
             }
             self.full_directory_index.ser_de(ar)?;
         }
