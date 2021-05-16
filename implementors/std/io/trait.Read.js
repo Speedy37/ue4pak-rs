@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["ue4pak"] = [{"text":"impl&lt;F:&nbsp;<a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/std/io/trait.Read.html\" title=\"trait std::io::Read\">Read</a>&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/std/io/trait.Read.html\" title=\"trait std::io::Read\">Read</a> for <a class=\"struct\" href=\"ue4pak/archive/struct.ArchiveReader.html\" title=\"struct ue4pak::archive::ArchiveReader\">ArchiveReader</a>&lt;F&gt;","synthetic":false,"types":["ue4pak::archive::ArchiveReader"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

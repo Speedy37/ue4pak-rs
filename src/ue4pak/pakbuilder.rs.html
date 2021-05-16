@@ -212,17 +212,29 @@
 <span id="209">209</span>
 <span id="210">210</span>
 <span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
 
 <span class="kw">use</span> <span class="ident">sha1</span>::{<span class="ident">Digest</span>, <span class="ident">Sha1</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">archive</span>::{<span class="ident">Archivable</span>, <span class="ident">Archive</span>},
-    <span class="ident">pakentry</span>::<span class="ident">FLAG_DELETED</span>,
-    <span class="ident">pakindex</span>::<span class="ident">PakIndex</span>,
-    <span class="ident">PakEntry</span>, <span class="ident">PakFile</span>, <span class="ident">PakInfo</span>, <span class="ident">PakVersion</span>,
-};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">archive</span>::{<span class="ident">Archivable</span>, <span class="ident">Archive</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">pakentry</span>::<span class="ident">FLAG_DELETED</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">pakindex</span>::<span class="ident">PakIndex</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">pakindexv1</span>::<span class="ident">PakIndexV1</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">pakindexv2</span>::<span class="ident">PakIndexV2</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">PakEntry</span>, <span class="ident">PakFile</span>, <span class="ident">PakInfo</span>, <span class="ident">PakVersion</span>};
 
 <span class="kw">struct</span> <span class="ident">Sha1Writer</span><span class="op">&lt;</span><span class="ident">W</span><span class="op">&gt;</span> {
     <span class="ident">ar</span>: <span class="ident">W</span>,
@@ -345,16 +357,17 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PakFileBuilder</span> {
     <span class="ident">pos</span>: <span class="ident">u64</span>,
     <span class="ident">info</span>: <span class="ident">PakInfo</span>,
-    <span class="ident">index</span>: <span class="ident">PakIndex</span>,
+    <span class="ident">index</span>: <span class="ident">PakIndexV1</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">PakFileBuilder</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">version</span>: <span class="ident">PakVersion</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">pos</span>: <span class="number">0</span>, <span class="ident">info</span>: <span class="ident">PakInfo</span>::<span class="ident">new</span>(<span class="ident">version</span>), <span class="ident">index</span>: <span class="ident">PakIndex</span>::<span class="ident">default</span>() }
+        <span class="self">Self</span> { <span class="ident">pos</span>: <span class="number">0</span>, <span class="ident">info</span>: <span class="ident">PakInfo</span>::<span class="ident">new</span>(<span class="ident">version</span>), <span class="ident">index</span>: <span class="ident">PakIndexV1</span>::<span class="ident">default</span>() }
     }
 
     <span class="doccomment">/// Write the index and info blocks</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">finalize</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Archive</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ar</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PakFile</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">info</span>.<span class="ident">version</span>;
         <span class="self">self</span>.<span class="ident">info</span>.<span class="ident">index_offset</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">pos</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sha1_ar</span> <span class="op">=</span> <span class="ident">Sha1Writer</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">ar</span>);
@@ -364,14 +377,25 @@
                 <span class="string">&quot;frozen index is not supported and is deprecated since UE4.26&quot;</span>,
             ));
         } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">index</span>.<span class="ident">ser_de</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">sha1_ar</span>, <span class="self">self</span>.<span class="ident">info</span>.<span class="ident">version</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">index</span>.<span class="ident">ser_de</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">sha1_ar</span>, <span class="ident">version</span>)<span class="question-mark">?</span>;
         }
 
         <span class="self">self</span>.<span class="ident">info</span>.<span class="ident">index_size</span> <span class="op">=</span> <span class="ident">sha1_ar</span>.<span class="ident">bytes</span>;
         <span class="self">self</span>.<span class="ident">info</span>.<span class="ident">hash</span> <span class="op">=</span> <span class="ident">sha1_ar</span>.<span class="ident">sha1</span>();
         <span class="self">self</span>.<span class="ident">info</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">pak</span> <span class="op">=</span> <span class="ident">PakFile</span> { <span class="ident">info</span>: <span class="self">self</span>.<span class="ident">info</span>, <span class="ident">index</span>: <span class="self">self</span>.<span class="ident">index</span> };
+        <span class="kw">let</span> <span class="ident">pak</span> <span class="op">=</span> <span class="ident">PakFile</span> {
+            <span class="ident">info</span>: <span class="self">self</span>.<span class="ident">info</span>,
+            <span class="ident">index</span>: <span class="kw">if</span> <span class="ident">version</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">PakVersion</span>::<span class="ident">PathHashIndex</span> {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v2</span> <span class="op">=</span> <span class="ident">PakIndexV2</span>::<span class="ident">default</span>();
+                <span class="kw">for</span> (<span class="ident">name</span>, <span class="ident">entry</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">index</span>.<span class="ident">take_entries</span>() {
+                    <span class="ident">v2</span>.<span class="ident">add</span>(<span class="ident">name</span>, <span class="ident">entry</span>, <span class="ident">version</span>)<span class="question-mark">?</span>;
+                }
+                <span class="ident">PakIndex</span>::<span class="ident">V2</span>(<span class="ident">v2</span>)
+            } <span class="kw">else</span> {
+                <span class="ident">PakIndex</span>::<span class="ident">V1</span>(<span class="self">self</span>.<span class="ident">index</span>)
+            },
+        };
         <span class="prelude-val">Ok</span>(<span class="ident">pak</span>)
     }
 

@@ -114,6 +114,14 @@
 <span id="111">111</span>
 <span id="112">112</span>
 <span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">/// Raw FArchive tools</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">archive</span>;
@@ -121,6 +129,8 @@
 <span class="kw">mod</span> <span class="ident">pakentry</span>;
 <span class="kw">mod</span> <span class="ident">pakfile</span>;
 <span class="kw">mod</span> <span class="ident">pakindex</span>;
+<span class="kw">mod</span> <span class="ident">pakindexv1</span>;
+<span class="kw">mod</span> <span class="ident">pakindexv2</span>;
 <span class="kw">mod</span> <span class="ident">pakinfo</span>;
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
@@ -145,6 +155,8 @@
     <span class="ident">FNameBasedCompressionMethod422</span>,
     <span class="ident">FNameBasedCompressionMethod</span>,
     <span class="ident">FrozenIndex</span>,
+    <span class="ident">PathHashIndex</span>,
+    <span class="ident">Fnv64BugFix</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">PakVersion</span> {
@@ -175,6 +187,8 @@
             <span class="ident">PakVersion</span>::<span class="ident">FNameBasedCompressionMethod422</span>,
             <span class="ident">PakVersion</span>::<span class="ident">FNameBasedCompressionMethod</span>,
             <span class="ident">PakVersion</span>::<span class="ident">FrozenIndex</span>,
+            <span class="ident">PakVersion</span>::<span class="ident">PathHashIndex</span>,
+            <span class="ident">PakVersion</span>::<span class="ident">Fnv64BugFix</span>,
         ]
     }
 
@@ -190,6 +204,8 @@
             <span class="ident">PakVersion</span>::<span class="ident">FNameBasedCompressionMethod422</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">8</span>,
             <span class="ident">PakVersion</span>::<span class="ident">FNameBasedCompressionMethod</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">8</span>,
             <span class="ident">PakVersion</span>::<span class="ident">FrozenIndex</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">9</span>,
+            <span class="ident">PakVersion</span>::<span class="ident">PathHashIndex</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">10</span>,
+            <span class="ident">PakVersion</span>::<span class="ident">Fnv64BugFix</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">11</span>,
         }
     }
 }
