@@ -48,7 +48,7 @@ impl ArchivableWith<PakVersion> for PakEntry {
                 idx.ser_de(ar)?;
                 self.compression_method_index = From::from(idx);
             }
-            _ if version < PakVersion::FNameBasedCompressionMethod422 => {
+            ver if ver < PakVersion::FNameBasedCompressionMethod422 => {
                 let mut legacy_compression_method = 0;
                 legacy_compression_method.ser_de(ar)?;
                 self.compression_method_index = match legacy_compression_method {

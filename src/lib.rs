@@ -19,7 +19,7 @@ pub use pakentry::{PakCompressedBlock, PakEntry};
 pub use pakfile::PakFile;
 pub use pakindex::PakIndex;
 pub use pakindexv1::PakIndexV1;
-pub use pakindexv2::PakIndexV2;
+pub use pakindexv2::{PakEntryLocation, PakIndexV2};
 pub use pakinfo::PakInfo;
 use sha1::digest::generic_array::typenum::Unsigned;
 
