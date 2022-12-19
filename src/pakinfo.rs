@@ -125,7 +125,6 @@ impl Archivable for PakInfo {
                 }
             } else {
                 for (i, compression_method) in self.compression_methods[1..].iter().enumerate() {
-                    compression_method.as_bytes();
                     let pos = i * COMPRESSION_METHOD_NAME_LEN;
                     buffer[pos..].copy_from_slice(compression_method.as_bytes());
                 }

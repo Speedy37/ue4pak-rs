@@ -22,27 +22,33 @@ pub struct PakFile {
 
 impl PakFile {
     pub fn load_any<A: Archive + io::Seek>(ar: &mut A) -> io::Result<Self> {
-        Self::load_versions(ar, "", PakVersion::list().iter().rev().copied())
+        Self::load_versions(ar, None, PakVersion::list().iter().rev().copied())
     }
 
     pub fn load_any_with_key<A: Archive + io::Seek>(ar: &mut A, key: &str) -> io::Result<Self> {
-        Self::load_versions(ar, key, PakVersion::list().iter().rev().copied())
+        Self::load_versions(ar, Some(key), PakVersion::list().iter().rev().copied())
     }
 
     pub fn load_version<A: Archive + io::Seek>(
         ar: &mut A,
         version: PakVersion,
     ) -> io::Result<Self> {
-        Self::load_versions(ar, "", [version].iter().copied())
+        Self::load_versions(ar, None, [version].iter().copied())
     }
 
     pub fn load_versions<A: Archive + io::Seek>(
         ar: &mut A,
-        key: &str,
+        hash: Option<&str>,
         versions: impl Iterator<Item = PakVersion>,
     ) -> io::Result<Self> {
         let info = Self::de_pakinfo_versions(ar, versions)?;
-        let key = Some(aes256_base64_key(key)?);
+        let key = match hash {
+            Some(hash) => {
+                let tmp = aes256_base64_key(hash)?;
+                Some(tmp)
+            }
+            None => None,
+        };
         let index = Self::load_index(&info, ar, &key)?;
         Ok(Self { info, index, key })
     }
@@ -90,13 +96,13 @@ impl PakFile {
         }
         if info.encrypted_index {
             if let Some(key) = key {
-                let mut decrypted_ar = Self::decrypt_index(ar, info.index_size, &key)?;
+                let mut decrypted_ar = Self::decrypt_index(ar, info.index_size, key)?;
                 Self::_load_index(
                     info,
                     &mut decrypted_ar,
                     move |decrypted_ar, offset, size| {
                         ar.seek(io::SeekFrom::Start(offset))?;
-                        *decrypted_ar = Self::decrypt_index(ar, size, &key)?;
+                        *decrypted_ar = Self::decrypt_index(ar, size, key)?;
                         Ok(())
                     },
                     |sha1_ar, size| {
@@ -112,10 +118,10 @@ impl PakFile {
                     },
                 )
             } else {
-                return Err(io::Error::new(
+                Err(io::Error::new(
                     io::ErrorKind::InvalidInput,
                     "PakFile is encrypted and no decryption key provided",
-                ));
+                ))
             }
         } else {
             Self::_load_index(

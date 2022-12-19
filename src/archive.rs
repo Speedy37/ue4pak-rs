@@ -54,6 +54,10 @@ impl ArchiveLen {
     pub const fn len(&self) -> u64 {
         self.len
     }
+
+    pub const fn is_empty(&self) -> bool {
+        self.len == 0
+    }
 }
 
 impl Archive for ArchiveLen {

@@ -40,7 +40,7 @@ fn aes256_base64_key(key: &str) -> io::Result<Aes256Key> {
             ),
         ));
     }
-    Ok(Aes256Key::from_slice(&key).clone())
+    Ok(*Aes256Key::from_slice(&key))
 }
 
 fn aes256_ecb_cipher(key: &Aes256Key) -> Aes256Cipher {

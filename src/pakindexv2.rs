@@ -392,7 +392,7 @@ impl PakIndexV2 {
             {
                 return false;
             }
-            if entry.compression_blocks.len() > 0
+            if !entry.compression_blocks.is_empty()
                 && (header_size != entry.compression_blocks[0].compressed_start)
             {
                 return false;
@@ -442,7 +442,7 @@ impl PakIndexV2 {
         let uncompressed_size_u32 = u32::try_from(entry.uncompressed_size).ok();
         let flags = (u32::from(offset_u32.is_some()) * (1 << 31))
             | (u32::from(uncompressed_size_u32.is_some()) * (1 << 30))
-            | (u32::from(size_u32.is_some()) * 1 << 29)
+            | (u32::from(size_u32.is_some()) * (1 << 29))
             | (entry.compression_method_index << 23)
             | (u32::from(entry.is_encrypted()) * (1 << 22))
             | ((entry.compression_blocks.len() as u32) << 6)
@@ -523,7 +523,7 @@ impl PakIndexV2 {
         if compression_blocks_len == 1 && !entry.is_encrypted() {
             let compressed_start = entry.ser_de_len_with(version);
             entry.compression_blocks.push(PakCompressedBlock {
-                compressed_start: compressed_start,
+                compressed_start,
                 compressed_end: (compressed_start + entry.size),
             });
         } else if compression_blocks_len > 0 {
