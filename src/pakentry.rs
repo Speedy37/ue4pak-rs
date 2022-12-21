@@ -42,27 +42,31 @@ impl ArchivableWith<PakVersion> for PakEntry {
         self.offset.ser_de(ar)?;
         self.size.ser_de(ar)?;
         self.uncompressed_size.ser_de(ar)?;
-        if version < PakVersion::FNameBasedCompressionMethod422 {
-            let mut legacy_compression_method = 0;
-            legacy_compression_method.ser_de(ar)?;
-            self.compression_method_index = match legacy_compression_method {
-                x if x == COMPRESS_NONE => 0,
-                x if (x & COMPRESS_ZLIB) > 0 => 1,
-                x if (x & COMPRESS_GZIP) > 0 => 2,
-                x if (x & COMPRESS_CUSTOM) > 0 => 3,
-                _ => {
-                    return Err(io::Error::new(
-                        io::ErrorKind::Other,
-                        "unknown legacy compression type",
-                    ))
-                }
-            };
-        } else if version == PakVersion::FNameBasedCompressionMethod422 {
-            let mut idx = 0u8;
-            idx.ser_de(ar)?;
-            self.compression_method_index = From::from(idx);
-        } else {
-            self.compression_method_index.ser_de(ar)?;
+        match version {
+            PakVersion::FNameBasedCompressionMethod422 => {
+                let mut idx = 0u8;
+                idx.ser_de(ar)?;
+                self.compression_method_index = From::from(idx);
+            }
+            ver if ver < PakVersion::FNameBasedCompressionMethod422 => {
+                let mut legacy_compression_method = 0;
+                legacy_compression_method.ser_de(ar)?;
+                self.compression_method_index = match legacy_compression_method {
+                    x if x == COMPRESS_NONE => 0,
+                    x if (x & COMPRESS_ZLIB) > 0 => 1,
+                    x if (x & COMPRESS_GZIP) > 0 => 2,
+                    x if (x & COMPRESS_CUSTOM) > 0 => 3,
+                    _ => {
+                        return Err(io::Error::new(
+                            io::ErrorKind::Other,
+                            "unknown legacy compression type",
+                        ))
+                    }
+                };
+            }
+            _ => {
+                self.compression_method_index.ser_de(ar)?;
+            }
         }
         if version <= PakVersion::Initial {
             let mut ticks = 0u64;
