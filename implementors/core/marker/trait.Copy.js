@@ -1,3 +1,3 @@
-(function() {var implementors = {};
-implementors["ue4pak"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"ue4pak/enum.PakVersion.html\" title=\"enum ue4pak::PakVersion\">PakVersion</a>","synthetic":false,"types":["ue4pak::PakVersion"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {var implementors = {
+"ue4pak":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.65.0/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"ue4pak/enum.PakEntryLocation.html\" title=\"enum ue4pak::PakEntryLocation\">PakEntryLocation</a>"],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.65.0/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"ue4pak/enum.PakVersion.html\" title=\"enum ue4pak::PakVersion\">PakVersion</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,105 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/pakindexv2.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>pakindexv2.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../ue4pak/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/pakindexv2.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>pakindexv2.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../ue4pak/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../ue4pak/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../ue4pak/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -545,478 +542,477 @@
 <span id="542">542</span>
 <span id="543">543</span>
 <span id="544">544</span>
-</pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections</span>::<span class="ident">BTreeMap</span>, <span class="ident">io</span>};
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>, <span class="ident">mem</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
+<span class="kw">use </span>std::convert::TryFrom;
+<span class="kw">use </span>std::{collections::BTreeMap, io};
+<span class="kw">use </span>std::{fmt, mem};
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">archive</span>::{<span class="ident">ArchivableWith</span>, <span class="ident">ArchiveReader</span>, <span class="ident">ArchiveWriter</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">pakentry</span>::<span class="ident">FLAG_ENCRYPTED</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">PakCompressedBlock</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">archive</span>::{<span class="ident">Archivable</span>, <span class="ident">Archive</span>},
-    <span class="ident">PakEntry</span>, <span class="ident">PakVersion</span>,
+<span class="kw">use </span><span class="kw">crate</span>::archive::{ArchivableWith, ArchiveReader, ArchiveWriter};
+<span class="kw">use </span><span class="kw">crate</span>::pakentry::FLAG_ENCRYPTED;
+<span class="kw">use </span><span class="kw">crate</span>::PakCompressedBlock;
+<span class="kw">use crate</span>::{
+    archive::{Archivable, Archive},
+    PakEntry, PakVersion,
 };
 
-<span class="kw">const</span> <span class="ident">AES_BLOCK_SIZE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">16</span>;
+<span class="kw">const </span>AES_BLOCK_SIZE: u64 = <span class="number">16</span>;
 
-<span class="kw">fn</span> <span class="ident">legacy_fnv64</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">seed</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
-    <span class="kw">const</span> <span class="ident">OFFSET</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0x00000100000001b3</span>;
-    <span class="kw">const</span> <span class="ident">PRIME</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0xcbf29ce484222325</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">h</span> <span class="op">=</span> <span class="ident">OFFSET</span>.<span class="ident">wrapping_add</span>(<span class="ident">seed</span>);
-    <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">byte</span> <span class="kw">in</span> <span class="ident">s</span>.<span class="ident">as_bytes</span>() {
-        <span class="ident">h</span> <span class="op">^</span><span class="op">=</span> <span class="ident">byte</span> <span class="kw">as</span> <span class="ident">u64</span>;
-        <span class="ident">h</span> <span class="op">=</span> <span class="ident">h</span>.<span class="ident">wrapping_mul</span>(<span class="ident">PRIME</span>);
+<span class="kw">fn </span>legacy_fnv64(s: <span class="kw-2">&amp;</span>str, seed: u64) -&gt; u64 {
+    <span class="kw">const </span>OFFSET: u64 = <span class="number">0x00000100000001b3</span>;
+    <span class="kw">const </span>PRIME: u64 = <span class="number">0xcbf29ce484222325</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>h = OFFSET.wrapping_add(seed);
+    <span class="kw">for </span><span class="kw-2">&amp;</span>byte <span class="kw">in </span>s.as_bytes() {
+        h ^= byte <span class="kw">as </span>u64;
+        h = h.wrapping_mul(PRIME);
     }
-    <span class="ident">h</span>
+    h
 }
-<span class="kw">fn</span> <span class="ident">fnv64</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">seed</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
-    <span class="kw">const</span> <span class="ident">OFFSET</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0xcbf29ce484222325</span>;
-    <span class="kw">const</span> <span class="ident">PRIME</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0x00000100000001b3</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">h</span> <span class="op">=</span> <span class="ident">OFFSET</span>.<span class="ident">wrapping_add</span>(<span class="ident">seed</span>);
-    <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">byte</span> <span class="kw">in</span> <span class="ident">s</span>.<span class="ident">as_bytes</span>() {
-        <span class="ident">h</span> <span class="op">^</span><span class="op">=</span> <span class="ident">byte</span> <span class="kw">as</span> <span class="ident">u64</span>;
-        <span class="ident">h</span> <span class="op">=</span> <span class="ident">h</span>.<span class="ident">wrapping_mul</span>(<span class="ident">PRIME</span>);
+<span class="kw">fn </span>fnv64(s: <span class="kw-2">&amp;</span>str, seed: u64) -&gt; u64 {
+    <span class="kw">const </span>OFFSET: u64 = <span class="number">0xcbf29ce484222325</span>;
+    <span class="kw">const </span>PRIME: u64 = <span class="number">0x00000100000001b3</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>h = OFFSET.wrapping_add(seed);
+    <span class="kw">for </span><span class="kw-2">&amp;</span>byte <span class="kw">in </span>s.as_bytes() {
+        h ^= byte <span class="kw">as </span>u64;
+        h = h.wrapping_mul(PRIME);
     }
-    <span class="ident">h</span>
+    h
 }
 
-<span class="doccomment">/// FPakEntryPair archivable</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">struct</span> <span class="ident">PakIndexEntry</span> {
-    <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="ident">entry</span>: <span class="ident">PakEntry</span>,
+<span class="doccomment">/// FPakEntryPair archivable
+</span><span class="attribute">#[derive(Debug, Default)]
+</span><span class="kw">struct </span>PakIndexEntry {
+    name: String,
+    entry: PakEntry,
 }
-<span class="kw">impl</span> <span class="ident">ArchivableWith</span><span class="op">&lt;</span><span class="ident">PakVersion</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">PakIndexEntry</span> {
-    <span class="kw">fn</span> <span class="ident">ser_de_with</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Archive</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ar</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>, <span class="ident">version</span>: <span class="ident">PakVersion</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">name</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">entry</span>.<span class="ident">ser_de_with</span>(<span class="ident">ar</span>, <span class="ident">version</span>)<span class="question-mark">?</span>;
+<span class="kw">impl </span>ArchivableWith&lt;PakVersion&gt; <span class="kw">for </span>PakIndexEntry {
+    <span class="kw">fn </span>ser_de_with&lt;A: Archive&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ar: <span class="kw-2">&amp;mut </span>A, version: PakVersion) -&gt; io::Result&lt;()&gt; {
+        <span class="self">self</span>.name.ser_de(ar)<span class="question-mark">?</span>;
+        <span class="self">self</span>.entry.ser_de_with(ar, version)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PakEntryLocation</span> {
-    <span class="ident">Deleted</span>,
-    <span class="ident">Offset</span>(<span class="ident">usize</span>),
-    <span class="ident">Index</span>(<span class="ident">usize</span>),
+<span class="attribute">#[derive(Debug, Clone, Copy)]
+</span><span class="kw">pub enum </span>PakEntryLocation {
+    Deleted,
+    Offset(usize),
+    Index(usize),
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RawPakEntryLocation</span> {
-    <span class="ident">index</span>: <span class="ident">i32</span>,
+<span class="attribute">#[derive(Default, Clone, Copy)]
+</span><span class="kw">pub struct </span>RawPakEntryLocation {
+    index: i32,
 }
 
-<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">RawPakEntryLocation</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="self">self</span>.<span class="ident">get</span>().<span class="ident">fmt</span>(<span class="ident">f</span>)
+<span class="kw">impl </span>std::fmt::Debug <span class="kw">for </span>RawPakEntryLocation {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        <span class="self">self</span>.get().fmt(f)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">RawPakEntryLocation</span> {
-    <span class="kw">fn</span> <span class="ident">from_offset</span>(<span class="ident">offset</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">index</span>: <span class="ident">offset</span> <span class="kw">as</span> <span class="ident">i32</span> }
+<span class="kw">impl </span>RawPakEntryLocation {
+    <span class="kw">fn </span>from_offset(offset: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ index: offset <span class="kw">as </span>i32 }
     }
 
-    <span class="kw">fn</span> <span class="ident">from_index</span>(<span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">index</span>: <span class="op">-</span>(<span class="ident">index</span> <span class="kw">as</span> <span class="ident">i32</span>) <span class="op">-</span> <span class="number">1</span> }
+    <span class="kw">fn </span>from_index(index: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ index: -(index <span class="kw">as </span>i32) - <span class="number">1 </span>}
     }
 
-    <span class="kw">fn</span> <span class="ident">get</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PakEntryLocation</span> {
-        <span class="kw">const</span> <span class="ident">MAX</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="ident">i32</span>::<span class="ident">MAX</span> <span class="op">-</span> <span class="number">1</span>;
-        <span class="kw">const</span> <span class="ident">MIN</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="op">-</span><span class="ident">MAX</span> <span class="op">-</span> <span class="number">1</span>;
+    <span class="kw">fn </span>get(<span class="self">self</span>) -&gt; PakEntryLocation {
+        <span class="kw">const </span>MAX: i32 = i32::MAX - <span class="number">1</span>;
+        <span class="kw">const </span>MIN: i32 = -MAX - <span class="number">1</span>;
 
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">index</span> {
-            <span class="ident">x</span> @ <span class="ident">MIN</span>..<span class="op">=</span><span class="op">-</span><span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PakEntryLocation</span>::<span class="ident">Index</span>((<span class="op">-</span>(<span class="ident">x</span> <span class="op">+</span> <span class="number">1</span>)) <span class="kw">as</span> <span class="ident">usize</span>),
-            <span class="ident">x</span> @ <span class="number">0</span>..<span class="op">=</span><span class="ident">MAX</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PakEntryLocation</span>::<span class="ident">Offset</span>(<span class="ident">x</span> <span class="kw">as</span> <span class="ident">usize</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PakEntryLocation</span>::<span class="ident">Deleted</span>,
+        <span class="kw">match </span><span class="self">self</span>.index {
+            x @ MIN..=-<span class="number">1 </span>=&gt; PakEntryLocation::Index((-(x + <span class="number">1</span>)) <span class="kw">as </span>usize),
+            x @ <span class="number">0</span>..=MAX =&gt; PakEntryLocation::Offset(x <span class="kw">as </span>usize),
+            <span class="kw">_ </span>=&gt; PakEntryLocation::Deleted,
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Archivable</span> <span class="kw">for</span> <span class="ident">RawPakEntryLocation</span> {
-    <span class="kw">fn</span> <span class="ident">ser_de</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Archive</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ar</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">index</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)
+<span class="kw">impl </span>Archivable <span class="kw">for </span>RawPakEntryLocation {
+    <span class="kw">fn </span>ser_de&lt;A: Archive&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ar: <span class="kw-2">&amp;mut </span>A) -&gt; io::Result&lt;()&gt; {
+        <span class="self">self</span>.index.ser_de(ar)
     }
 }
 
-<span class="kw">fn</span> <span class="ident">align</span>(<span class="ident">size</span>: <span class="ident">u64</span>, <span class="ident">alignment</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
-    (<span class="ident">size</span> <span class="op">+</span> <span class="ident">alignment</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">&amp;</span> <span class="op">!</span>(<span class="ident">alignment</span> <span class="op">-</span> <span class="number">1</span>)
+<span class="kw">fn </span>align(size: u64, alignment: u64) -&gt; u64 {
+    (size + alignment - <span class="number">1</span>) &amp; !(alignment - <span class="number">1</span>)
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PakIndexV2</span> {
-    <span class="doccomment">/// Mount point</span>
-    <span class="kw">pub</span> <span class="ident">mount_point</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The number of file entries in the pak file</span>
-    <span class="ident">num_entries</span>: <span class="ident">u32</span>,
-    <span class="doccomment">/// Info on all files stored in pak</span>
-    <span class="ident">files</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PakEntry</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// The seed passed to the hash function for hashing filenames in this pak.</span>
-    <span class="doccomment">/// Differs per pack so that the same filename in different paks has different hashes</span>
-    <span class="kw">pub</span> <span class="ident">path_hash_seed</span>: <span class="ident">u64</span>,
+<span class="attribute">#[derive(Debug, Default)]
+</span><span class="kw">pub struct </span>PakIndexV2 {
+    <span class="doccomment">/// Mount point
+    </span><span class="kw">pub </span>mount_point: String,
+    <span class="doccomment">/// The number of file entries in the pak file
+    </span>num_entries: u32,
+    <span class="doccomment">/// Info on all files stored in pak
+    </span>files: Vec&lt;PakEntry&gt;,
+    <span class="doccomment">/// The seed passed to the hash function for hashing filenames in this pak.
+    /// Differs per pack so that the same filename in different paks has different hashes
+    </span><span class="kw">pub </span>path_hash_seed: u64,
 
-    <span class="doccomment">/// FPakEntries that have been serialized into a compacted format in an array of bytes.</span>
-    <span class="ident">encoded_pak_entries</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
-    <span class="ident">decoded_pak_entries</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">PakEntry</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// FPakEntries that have been serialized into a compacted format in an array of bytes.
+    </span>encoded_pak_entries: Vec&lt;u8&gt;,
+    decoded_pak_entries: HashMap&lt;usize, PakEntry&gt;,
 
-    <span class="kw">pub</span> <span class="ident">has_path_hash_index</span>: <span class="ident">bool</span>,
-    <span class="ident">path_hash_index_offset</span>: <span class="ident">i64</span>,
-    <span class="ident">path_hash_index_size</span>: <span class="ident">i64</span>,
-    <span class="kw">pub</span> <span class="ident">path_hash_index_hash</span>: [<span class="ident">u8</span>; <span class="number">20</span>],
-    <span class="doccomment">/// Index data that provides a map from the hash of a Filename to an FPakEntryLocation</span>
-    <span class="ident">path_hash_index</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">RawPakEntryLocation</span><span class="op">&gt;</span>,
-    <span class="ident">pruned_directory_index</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">RawPakEntryLocation</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="kw">pub </span>has_path_hash_index: bool,
+    path_hash_index_offset: i64,
+    path_hash_index_size: i64,
+    <span class="kw">pub </span>path_hash_index_hash: [u8; <span class="number">20</span>],
+    <span class="doccomment">/// Index data that provides a map from the hash of a Filename to an FPakEntryLocation
+    </span>path_hash_index: BTreeMap&lt;u64, RawPakEntryLocation&gt;,
+    pruned_directory_index: BTreeMap&lt;String, BTreeMap&lt;String, RawPakEntryLocation&gt;&gt;,
 
-    <span class="kw">pub</span> <span class="ident">has_full_directory_index</span>: <span class="ident">bool</span>,
-    <span class="ident">full_directory_index_offset</span>: <span class="ident">i64</span>,
-    <span class="ident">full_directory_index_size</span>: <span class="ident">i64</span>,
-    <span class="kw">pub</span> <span class="ident">full_directory_index_hash</span>: [<span class="ident">u8</span>; <span class="number">20</span>],
-    <span class="doccomment">/// Pak Index organized as a map of directories to support searches by path.</span>
-    <span class="ident">full_directory_index</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">RawPakEntryLocation</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="kw">pub </span>has_full_directory_index: bool,
+    full_directory_index_offset: i64,
+    full_directory_index_size: i64,
+    <span class="kw">pub </span>full_directory_index_hash: [u8; <span class="number">20</span>],
+    <span class="doccomment">/// Pak Index organized as a map of directories to support searches by path.
+    </span>full_directory_index: BTreeMap&lt;String, BTreeMap&lt;String, RawPakEntryLocation&gt;&gt;,
 }
-<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">PakIndexV2</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;MountPoint: &#39;{}&#39;&quot;</span>, <span class="self">self</span>.<span class="ident">mount_point</span>)<span class="question-mark">?</span>;
-        <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;NumEntries: {}&quot;</span>, <span class="self">self</span>.<span class="ident">num_entries</span>)<span class="question-mark">?</span>;
-        <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;PathHashSeed: {}&quot;</span>, <span class="self">self</span>.<span class="ident">path_hash_seed</span>)<span class="question-mark">?</span>;
-        <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;EncodedPakEntries: {}&quot;</span>, <span class="self">self</span>.<span class="ident">encoded_pak_entries</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
-        <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;FilesNum: {}&quot;</span>, <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
-        <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;bReaderHasPathHashIndex: {}&quot;</span>, <span class="self">self</span>.<span class="ident">has_path_hash_index</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_path_hash_index</span> {
-            <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;PathHashIndexOffset: {}&quot;</span>, <span class="self">self</span>.<span class="ident">path_hash_index_offset</span>)<span class="question-mark">?</span>;
-            <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;PathHashIndexSize: {}&quot;</span>, <span class="self">self</span>.<span class="ident">path_hash_index_size</span>)<span class="question-mark">?</span>;
-            <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;PathHashIndexHash: {:X?}&quot;</span>, <span class="self">self</span>.<span class="ident">path_hash_index_hash</span>)<span class="question-mark">?</span>;
-            <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;PathHashIndex: {}&quot;</span>, <span class="self">self</span>.<span class="ident">path_hash_index</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
-            <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;PrunedDirectoryIndex: {}&quot;</span>, <span class="self">self</span>.<span class="ident">pruned_directory_index</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>PakIndexV2 {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="macro">writeln!</span>(f, <span class="string">&quot;MountPoint: &#39;{}&#39;&quot;</span>, <span class="self">self</span>.mount_point)<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(f, <span class="string">&quot;NumEntries: {}&quot;</span>, <span class="self">self</span>.num_entries)<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(f, <span class="string">&quot;PathHashSeed: {}&quot;</span>, <span class="self">self</span>.path_hash_seed)<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(f, <span class="string">&quot;EncodedPakEntries: {}&quot;</span>, <span class="self">self</span>.encoded_pak_entries.len())<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(f, <span class="string">&quot;FilesNum: {}&quot;</span>, <span class="self">self</span>.files.len())<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(f, <span class="string">&quot;bReaderHasPathHashIndex: {}&quot;</span>, <span class="self">self</span>.has_path_hash_index)<span class="question-mark">?</span>;
+        <span class="kw">if </span><span class="self">self</span>.has_path_hash_index {
+            <span class="macro">writeln!</span>(f, <span class="string">&quot;PathHashIndexOffset: {}&quot;</span>, <span class="self">self</span>.path_hash_index_offset)<span class="question-mark">?</span>;
+            <span class="macro">writeln!</span>(f, <span class="string">&quot;PathHashIndexSize: {}&quot;</span>, <span class="self">self</span>.path_hash_index_size)<span class="question-mark">?</span>;
+            <span class="macro">writeln!</span>(f, <span class="string">&quot;PathHashIndexHash: {:X?}&quot;</span>, <span class="self">self</span>.path_hash_index_hash)<span class="question-mark">?</span>;
+            <span class="macro">writeln!</span>(f, <span class="string">&quot;PathHashIndex: {}&quot;</span>, <span class="self">self</span>.path_hash_index.len())<span class="question-mark">?</span>;
+            <span class="macro">writeln!</span>(f, <span class="string">&quot;PrunedDirectoryIndex: {}&quot;</span>, <span class="self">self</span>.pruned_directory_index.len())<span class="question-mark">?</span>;
         }
-        <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;bReaderHasFullDirectoryIndex: {}&quot;</span>, <span class="self">self</span>.<span class="ident">has_full_directory_index</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_full_directory_index</span> {
-            <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;FullDirectoryIndexOffset: {}&quot;</span>, <span class="self">self</span>.<span class="ident">full_directory_index_offset</span>)<span class="question-mark">?</span>;
-            <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;FullDirectoryIndexSize: {}&quot;</span>, <span class="self">self</span>.<span class="ident">full_directory_index_size</span>)<span class="question-mark">?</span>;
-            <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;FullDirectoryIndexHash: {:X?}&quot;</span>, <span class="self">self</span>.<span class="ident">full_directory_index_hash</span>)<span class="question-mark">?</span>;
-            <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;DirectoryIndex: {}&quot;</span>, <span class="self">self</span>.<span class="ident">full_directory_index</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(f, <span class="string">&quot;bReaderHasFullDirectoryIndex: {}&quot;</span>, <span class="self">self</span>.has_full_directory_index)<span class="question-mark">?</span>;
+        <span class="kw">if </span><span class="self">self</span>.has_full_directory_index {
+            <span class="macro">writeln!</span>(f, <span class="string">&quot;FullDirectoryIndexOffset: {}&quot;</span>, <span class="self">self</span>.full_directory_index_offset)<span class="question-mark">?</span>;
+            <span class="macro">writeln!</span>(f, <span class="string">&quot;FullDirectoryIndexSize: {}&quot;</span>, <span class="self">self</span>.full_directory_index_size)<span class="question-mark">?</span>;
+            <span class="macro">writeln!</span>(f, <span class="string">&quot;FullDirectoryIndexHash: {:X?}&quot;</span>, <span class="self">self</span>.full_directory_index_hash)<span class="question-mark">?</span>;
+            <span class="macro">writeln!</span>(f, <span class="string">&quot;DirectoryIndex: {}&quot;</span>, <span class="self">self</span>.full_directory_index.len())<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
     }
 }
-<span class="kw">impl</span> <span class="ident">PakIndexV2</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
-        <span class="kw-2">*</span><span class="self">self</span> <span class="op">=</span> <span class="self">Self</span> {
-            <span class="ident">mount_point</span>: <span class="ident">mem</span>::<span class="ident">take</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">mount_point</span>),
-            <span class="ident">path_hash_seed</span>: <span class="self">self</span>.<span class="ident">path_hash_seed</span>,
-            <span class="ident">has_path_hash_index</span>: <span class="self">self</span>.<span class="ident">has_path_hash_index</span>,
-            <span class="ident">has_full_directory_index</span>: <span class="self">self</span>.<span class="ident">has_full_directory_index</span>,
-            ..<span class="self">Self</span>::<span class="ident">default</span>()
+<span class="kw">impl </span>PakIndexV2 {
+    <span class="kw">pub fn </span>clear(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw-2">*</span><span class="self">self </span>= <span class="self">Self </span>{
+            mount_point: mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.mount_point),
+            path_hash_seed: <span class="self">self</span>.path_hash_seed,
+            has_path_hash_index: <span class="self">self</span>.has_path_hash_index,
+            has_full_directory_index: <span class="self">self</span>.has_full_directory_index,
+            ..<span class="self">Self</span>::default()
         };
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">name</span>: <span class="ident">String</span>,
-        <span class="ident">entry</span>: <span class="ident">PakEntry</span>,
-        <span class="ident">version</span>: <span class="ident">PakVersion</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PakEntryLocation</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">encoded_pak_entries</span>.<span class="ident">len</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">location</span> <span class="op">=</span> <span class="ident">RawPakEntryLocation</span>::<span class="ident">from_offset</span>(<span class="ident">offset</span>);
-        <span class="kw">let</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">io</span>::<span class="ident">Cursor</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">encoded_pak_entries</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ar</span> <span class="op">=</span> <span class="ident">ArchiveWriter</span>(<span class="ident">cursor</span>);
-        <span class="kw">if</span> <span class="self">Self</span>::<span class="ident">encode_entry</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ar</span>, <span class="kw-2">&amp;</span><span class="ident">entry</span>, <span class="ident">version</span>)<span class="question-mark">?</span> {
-            <span class="self">self</span>.<span class="ident">decoded_pak_entries</span>.<span class="ident">insert</span>(<span class="ident">offset</span>, <span class="ident">entry</span>);
-        } <span class="kw">else</span> {
-            <span class="ident">location</span> <span class="op">=</span> <span class="ident">RawPakEntryLocation</span>::<span class="ident">from_index</span>(<span class="self">self</span>.<span class="ident">files</span>.<span class="ident">len</span>());
-            <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">push</span>(<span class="ident">entry</span>);
+    <span class="kw">pub fn </span>add(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        name: String,
+        entry: PakEntry,
+        version: PakVersion,
+    ) -&gt; io::Result&lt;PakEntryLocation&gt; {
+        <span class="kw">let </span>offset = <span class="self">self</span>.encoded_pak_entries.len();
+        <span class="kw">let </span><span class="kw-2">mut </span>location = RawPakEntryLocation::from_offset(offset);
+        <span class="kw">let </span>cursor = io::Cursor::new(<span class="kw-2">&amp;mut </span><span class="self">self</span>.encoded_pak_entries);
+        <span class="kw">let </span><span class="kw-2">mut </span>ar = ArchiveWriter(cursor);
+        <span class="kw">if </span><span class="self">Self</span>::encode_entry(<span class="kw-2">&amp;mut </span>ar, <span class="kw-2">&amp;</span>entry, version)<span class="question-mark">? </span>{
+            <span class="self">self</span>.decoded_pak_entries.insert(offset, entry);
+        } <span class="kw">else </span>{
+            location = RawPakEntryLocation::from_index(<span class="self">self</span>.files.len());
+            <span class="self">self</span>.files.push(entry);
         };
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_path_hash_index</span> {
-            <span class="kw">let</span> <span class="ident">lname</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">to_lowercase</span>();
-            <span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">version</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">PakVersion</span>::<span class="ident">Fnv64BugFix</span> {
-                <span class="ident">fnv64</span>(<span class="kw-2">&amp;</span><span class="ident">lname</span>, <span class="self">self</span>.<span class="ident">path_hash_seed</span>)
-            } <span class="kw">else</span> {
-                <span class="ident">legacy_fnv64</span>(<span class="kw-2">&amp;</span><span class="ident">lname</span>, <span class="self">self</span>.<span class="ident">path_hash_seed</span>)
+        <span class="kw">if </span><span class="self">self</span>.has_path_hash_index {
+            <span class="kw">let </span>lname = name.to_lowercase();
+            <span class="kw">let </span>hash = <span class="kw">if </span>version &gt;= PakVersion::Fnv64BugFix {
+                fnv64(<span class="kw-2">&amp;</span>lname, <span class="self">self</span>.path_hash_seed)
+            } <span class="kw">else </span>{
+                legacy_fnv64(<span class="kw-2">&amp;</span>lname, <span class="self">self</span>.path_hash_seed)
             };
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">other</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">path_hash_index</span>.<span class="ident">insert</span>(<span class="ident">hash</span>, <span class="ident">location</span>) {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(
-                    <span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidInput</span>,
-                    <span class="macro">format</span><span class="macro">!</span>(
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(other) = <span class="self">self</span>.path_hash_index.insert(hash, location) {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    <span class="macro">format!</span>(
                         <span class="string">&quot;fnv64 hash collision for {:?} at {:?} against {:?}&quot;</span>,
-                        <span class="ident">lname</span>,
-                        <span class="ident">location</span>.<span class="ident">get</span>(),
-                        <span class="ident">other</span>.<span class="ident">get</span>()
+                        lname,
+                        location.get(),
+                        other.get()
                     ),
                 ));
             }
         }
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_full_directory_index</span> {
-            <span class="kw">match</span> <span class="ident">name</span>.<span class="ident">rsplit_once</span>(<span class="string">&#39;/&#39;</span>) {
-                <span class="prelude-val">Some</span>((<span class="ident">dir</span>, <span class="ident">name</span>)) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="self">self</span>.<span class="ident">full_directory_index</span>
-                        .<span class="ident">entry</span>(<span class="ident">dir</span>.<span class="ident">to_owned</span>())
-                        .<span class="ident">or_default</span>()
-                        .<span class="ident">insert</span>(<span class="ident">name</span>.<span class="ident">to_owned</span>(), <span class="ident">location</span>);
+        <span class="kw">if </span><span class="self">self</span>.has_full_directory_index {
+            <span class="kw">match </span>name.rsplit_once(<span class="string">&#39;/&#39;</span>) {
+                <span class="prelude-val">Some</span>((dir, name)) =&gt; {
+                    <span class="self">self</span>.full_directory_index
+                        .entry(dir.to_owned())
+                        .or_default()
+                        .insert(name.to_owned(), location);
                 }
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(
-                        <span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidInput</span>,
-                        <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;asset {:?} is not inside a directory&quot;</span>, <span class="ident">name</span>),
+                <span class="prelude-val">None </span>=&gt; {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(
+                        io::ErrorKind::InvalidInput,
+                        <span class="macro">format!</span>(<span class="string">&quot;asset {:?} is not inside a directory&quot;</span>, name),
                     ));
                 }
             }
         }
-        <span class="prelude-val">Ok</span>(<span class="ident">location</span>.<span class="ident">get</span>())
+        <span class="prelude-val">Ok</span>(location.get())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">hashed_entries</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="ident">u64</span>, <span class="kw-2">&amp;</span><span class="ident">PakEntry</span>)<span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span> {
-        <span class="self">self</span>.<span class="ident">path_hash_index</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="kw">move</span> <span class="op">|</span>(<span class="ident">hash</span>, <span class="ident">location</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">location</span>.<span class="ident">get</span>() {
-            <span class="ident">PakEntryLocation</span>::<span class="ident">Deleted</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
-            <span class="ident">PakEntryLocation</span>::<span class="ident">Offset</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="prelude-val">Some</span>((<span class="kw-2">*</span><span class="ident">hash</span>, <span class="self">self</span>.<span class="ident">decoded_pak_entries</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">i</span>).<span class="ident">expect</span>(<span class="string">&quot;a valid offset&quot;</span>)))
+    <span class="kw">pub fn </span>hashed_entries(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (u64, <span class="kw-2">&amp;</span>PakEntry)&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="self">self</span>.path_hash_index.iter().flat_map(<span class="kw">move </span>|(hash, location)| <span class="kw">match </span>location.get() {
+            PakEntryLocation::Deleted =&gt; <span class="prelude-val">None</span>,
+            PakEntryLocation::Offset(i) =&gt; {
+                <span class="prelude-val">Some</span>((<span class="kw-2">*</span>hash, <span class="self">self</span>.decoded_pak_entries.get(<span class="kw-2">&amp;</span>i).expect(<span class="string">&quot;a valid offset&quot;</span>)))
             }
-            <span class="ident">PakEntryLocation</span>::<span class="ident">Index</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>((<span class="kw-2">*</span><span class="ident">hash</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">files</span>[<span class="ident">i</span>])),
+            PakEntryLocation::Index(i) =&gt; <span class="prelude-val">Some</span>((<span class="kw-2">*</span>hash, <span class="kw-2">&amp;</span><span class="self">self</span>.files[i])),
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">entries</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">PakEntry</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">path_hash_index</span>.<span class="ident">values</span>().<span class="ident">flat_map</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">location</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">location</span>.<span class="ident">get</span>() {
-            <span class="ident">PakEntryLocation</span>::<span class="ident">Deleted</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
-            <span class="ident">PakEntryLocation</span>::<span class="ident">Offset</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">decoded_pak_entries</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">i</span>).<span class="ident">expect</span>(<span class="string">&quot;a valid offset&quot;</span>))
+    <span class="kw">pub fn </span>entries(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>PakEntry&gt; {
+        <span class="self">self</span>.path_hash_index.values().flat_map(<span class="kw">move </span>|location| <span class="kw">match </span>location.get() {
+            PakEntryLocation::Deleted =&gt; <span class="prelude-val">None</span>,
+            PakEntryLocation::Offset(i) =&gt; {
+                <span class="prelude-val">Some</span>(<span class="self">self</span>.decoded_pak_entries.get(<span class="kw-2">&amp;</span>i).expect(<span class="string">&quot;a valid offset&quot;</span>))
             }
-            <span class="ident">PakEntryLocation</span>::<span class="ident">Index</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">files</span>[<span class="ident">i</span>]),
+            PakEntryLocation::Index(i) =&gt; <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.files[i]),
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pruned_entries</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">PakEntryLocation</span>)<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">pruned_directory_index</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="op">|</span>(<span class="ident">dir_name</span>, <span class="ident">entries</span>)<span class="op">|</span> {
-            <span class="ident">entries</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span>(<span class="ident">entry_name</span>, <span class="ident">location</span>)<span class="op">|</span> {
-                (<span class="ident">dir_name</span>.<span class="ident">as_str</span>(), <span class="ident">entry_name</span>.<span class="ident">as_str</span>(), <span class="ident">location</span>.<span class="ident">get</span>())
+    <span class="kw">pub fn </span>pruned_entries(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str, PakEntryLocation)&gt; {
+        <span class="self">self</span>.pruned_directory_index.iter().flat_map(|(dir_name, entries)| {
+            entries.iter().map(<span class="kw">move </span>|(entry_name, location)| {
+                (dir_name.as_str(), entry_name.as_str(), location.get())
             })
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">full_entries</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">PakEntryLocation</span>)<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">full_directory_index</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="op">|</span>(<span class="ident">dir_name</span>, <span class="ident">entries</span>)<span class="op">|</span> {
-            <span class="ident">entries</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span>(<span class="ident">entry_name</span>, <span class="ident">location</span>)<span class="op">|</span> {
-                (<span class="ident">dir_name</span>.<span class="ident">as_str</span>(), <span class="ident">entry_name</span>.<span class="ident">as_str</span>(), <span class="ident">location</span>.<span class="ident">get</span>())
+    <span class="kw">pub fn </span>full_entries(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str, PakEntryLocation)&gt; {
+        <span class="self">self</span>.full_directory_index.iter().flat_map(|(dir_name, entries)| {
+            entries.iter().map(<span class="kw">move </span>|(entry_name, location)| {
+                (dir_name.as_str(), entry_name.as_str(), location.get())
             })
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ser</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Archive</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ar</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>, <span class="ident">version</span>: <span class="ident">PakVersion</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>, <span class="ident">version</span>, <span class="op">|</span><span class="ident">_ar</span>, <span class="ident">_offset</span>, <span class="ident">_size</span>, <span class="ident">_hash</span>, <span class="ident">_ctx</span><span class="op">|</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(
-                <span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidInput</span>,
+    <span class="kw">pub fn </span>ser&lt;A: Archive&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ar: <span class="kw-2">&amp;mut </span>A, version: PakVersion) -&gt; io::Result&lt;()&gt; {
+        <span class="self">self</span>.ser_de(ar, version, |_ar, _offset, _size, _hash, _ctx| {
+            <span class="prelude-val">Err</span>(io::Error::new(
+                io::ErrorKind::InvalidInput,
                 <span class="string">&quot;PakIndexV2::ser only supports writing mode&quot;</span>,
             ))
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">de</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Archive</span> <span class="op">+</span> <span class="ident">io</span>::<span class="ident">Seek</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ar</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>, <span class="ident">version</span>: <span class="ident">PakVersion</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>, <span class="ident">version</span>, <span class="op">|</span><span class="ident">ar</span>, <span class="ident">offset</span>, <span class="ident">_size</span>, <span class="ident">_hash</span>, <span class="ident">_ctx</span><span class="op">|</span> {
-            <span class="ident">ar</span>.<span class="ident">seek</span>(<span class="ident">io</span>::<span class="ident">SeekFrom</span>::<span class="ident">Start</span>(<span class="ident">offset</span>)).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ())<span class="question-mark">?</span>;
+    <span class="kw">pub fn </span>de&lt;A: Archive + io::Seek&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ar: <span class="kw-2">&amp;mut </span>A, version: PakVersion) -&gt; io::Result&lt;()&gt; {
+        <span class="self">self</span>.ser_de(ar, version, |ar, offset, _size, _hash, _ctx| {
+            ar.seek(io::SeekFrom::Start(offset)).map(|<span class="kw">_</span>| ())<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(())
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ser_de</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ar</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>, <span class="ident">version</span>: <span class="ident">PakVersion</span>, <span class="kw-2">mut</span> <span class="ident">seek</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">A</span>: <span class="ident">Archive</span>,
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>, <span class="ident">u64</span>, <span class="ident">u64</span>, [<span class="ident">u8</span>; <span class="number">20</span>], <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
+    <span class="kw">pub fn </span>ser_de&lt;A, F&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ar: <span class="kw-2">&amp;mut </span>A, version: PakVersion, <span class="kw-2">mut </span>seek: F) -&gt; io::Result&lt;()&gt;
+    <span class="kw">where
+        </span>A: Archive,
+        F: FnMut(<span class="kw-2">&amp;mut </span>A, u64, u64, [u8; <span class="number">20</span>], <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; io::Result&lt;()&gt;,
     {
-        <span class="self">self</span>.<span class="ident">mount_point</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">num_entries</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">path_hash_seed</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">has_path_hash_index</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_path_hash_index</span> {
-            <span class="self">self</span>.<span class="ident">path_hash_index_offset</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">path_hash_index_size</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">path_hash_index_hash</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.mount_point.ser_de(ar)<span class="question-mark">?</span>;
+        <span class="self">self</span>.num_entries.ser_de(ar)<span class="question-mark">?</span>;
+        <span class="self">self</span>.path_hash_seed.ser_de(ar)<span class="question-mark">?</span>;
+        <span class="self">self</span>.has_path_hash_index.ser_de(ar)<span class="question-mark">?</span>;
+        <span class="kw">if </span><span class="self">self</span>.has_path_hash_index {
+            <span class="self">self</span>.path_hash_index_offset.ser_de(ar)<span class="question-mark">?</span>;
+            <span class="self">self</span>.path_hash_index_size.ser_de(ar)<span class="question-mark">?</span>;
+            <span class="self">self</span>.path_hash_index_hash.ser_de(ar)<span class="question-mark">?</span>;
         }
 
-        <span class="self">self</span>.<span class="ident">has_full_directory_index</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_full_directory_index</span> {
-            <span class="self">self</span>.<span class="ident">full_directory_index_offset</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">full_directory_index_size</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">full_directory_index_hash</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.has_full_directory_index.ser_de(ar)<span class="question-mark">?</span>;
+        <span class="kw">if </span><span class="self">self</span>.has_full_directory_index {
+            <span class="self">self</span>.full_directory_index_offset.ser_de(ar)<span class="question-mark">?</span>;
+            <span class="self">self</span>.full_directory_index_size.ser_de(ar)<span class="question-mark">?</span>;
+            <span class="self">self</span>.full_directory_index_hash.ser_de(ar)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="self">self</span>.<span class="ident">encoded_pak_entries</span>.<span class="ident">len</span>())
-            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">Other</span>, <span class="ident">err</span>))<span class="question-mark">?</span>;
-        <span class="ident">len</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="ident">ar</span>.<span class="ident">is_reader</span>() {
-            <span class="self">self</span>.<span class="ident">encoded_pak_entries</span>.<span class="ident">clear</span>();
-            <span class="self">self</span>.<span class="ident">encoded_pak_entries</span>.<span class="ident">resize</span>(<span class="ident">len</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="number">0</span>);
-            <span class="ident">ar</span>.<span class="ident">read_exact</span>(<span class="self">self</span>.<span class="ident">encoded_pak_entries</span>.<span class="ident">as_mut_slice</span>())<span class="question-mark">?</span>;
-        } <span class="kw">else</span> {
-            <span class="ident">ar</span>.<span class="ident">write_all</span>(<span class="self">self</span>.<span class="ident">encoded_pak_entries</span>.<span class="ident">as_slice</span>())<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>len = u32::try_from(<span class="self">self</span>.encoded_pak_entries.len())
+            .map_err(|err| io::Error::new(io::ErrorKind::Other, err))<span class="question-mark">?</span>;
+        len.ser_de(ar)<span class="question-mark">?</span>;
+        <span class="kw">if </span>ar.is_reader() {
+            <span class="self">self</span>.encoded_pak_entries.clear();
+            <span class="self">self</span>.encoded_pak_entries.resize(len <span class="kw">as </span>usize, <span class="number">0</span>);
+            ar.read_exact(<span class="self">self</span>.encoded_pak_entries.as_mut_slice())<span class="question-mark">?</span>;
+        } <span class="kw">else </span>{
+            ar.write_all(<span class="self">self</span>.encoded_pak_entries.as_slice())<span class="question-mark">?</span>;
         }
 
-        <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">ser_de_with</span>(<span class="ident">ar</span>, <span class="ident">version</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.files.ser_de_with(ar, version)<span class="question-mark">?</span>;
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_path_hash_index</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">path_hash_index_offset</span> <span class="op">!</span><span class="op">=</span> <span class="op">-</span><span class="number">1</span> {
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">path_hash_index_offset</span> <span class="op">&lt;</span> <span class="number">0</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(
-                    <span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidData</span>,
-                    <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;corrupted PathHashIndexOffset: {}&quot;</span>, <span class="self">self</span>.<span class="ident">path_hash_index_offset</span>),
+        <span class="kw">if </span><span class="self">self</span>.has_path_hash_index &amp;&amp; <span class="self">self</span>.path_hash_index_offset != -<span class="number">1 </span>{
+            <span class="kw">if </span><span class="self">self</span>.path_hash_index_offset &lt; <span class="number">0 </span>{
+                <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    <span class="macro">format!</span>(<span class="string">&quot;corrupted PathHashIndexOffset: {}&quot;</span>, <span class="self">self</span>.path_hash_index_offset),
                 ));
             }
-            <span class="kw">if</span> <span class="ident">ar</span>.<span class="ident">is_reader</span>() {
-                <span class="ident">seek</span>(
-                    <span class="ident">ar</span>,
-                    <span class="self">self</span>.<span class="ident">path_hash_index_offset</span> <span class="kw">as</span> <span class="ident">u64</span>,
-                    <span class="self">self</span>.<span class="ident">path_hash_index_size</span> <span class="kw">as</span> <span class="ident">u64</span>,
-                    <span class="self">self</span>.<span class="ident">path_hash_index_hash</span>,
+            <span class="kw">if </span>ar.is_reader() {
+                seek(
+                    ar,
+                    <span class="self">self</span>.path_hash_index_offset <span class="kw">as </span>u64,
+                    <span class="self">self</span>.path_hash_index_size <span class="kw">as </span>u64,
+                    <span class="self">self</span>.path_hash_index_hash,
                     <span class="string">&quot;PathHashIndex&quot;</span>,
                 )<span class="question-mark">?</span>;
             }
-            <span class="self">self</span>.<span class="ident">path_hash_index</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">pruned_directory_index</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.path_hash_index.ser_de(ar)<span class="question-mark">?</span>;
+            <span class="self">self</span>.pruned_directory_index.ser_de(ar)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_full_directory_index</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">full_directory_index_offset</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">full_directory_index_offset</span> <span class="op">&lt;</span> <span class="number">0</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(
-                    <span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidData</span>,
-                    <span class="macro">format</span><span class="macro">!</span>(
+        <span class="kw">if </span><span class="self">self</span>.has_full_directory_index &amp;&amp; <span class="self">self</span>.full_directory_index_offset != <span class="number">0 </span>{
+            <span class="kw">if </span><span class="self">self</span>.full_directory_index_offset &lt; <span class="number">0 </span>{
+                <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    <span class="macro">format!</span>(
                         <span class="string">&quot;corrupted FullDirectoryIndexOffset: {}&quot;</span>,
-                        <span class="self">self</span>.<span class="ident">full_directory_index_offset</span>
+                        <span class="self">self</span>.full_directory_index_offset
                     ),
                 ));
             }
-            <span class="kw">if</span> <span class="ident">ar</span>.<span class="ident">is_reader</span>() {
-                <span class="ident">seek</span>(
-                    <span class="ident">ar</span>,
-                    <span class="self">self</span>.<span class="ident">full_directory_index_offset</span> <span class="kw">as</span> <span class="ident">u64</span>,
-                    <span class="self">self</span>.<span class="ident">full_directory_index_size</span> <span class="kw">as</span> <span class="ident">u64</span>,
-                    <span class="self">self</span>.<span class="ident">full_directory_index_hash</span>,
+            <span class="kw">if </span>ar.is_reader() {
+                seek(
+                    ar,
+                    <span class="self">self</span>.full_directory_index_offset <span class="kw">as </span>u64,
+                    <span class="self">self</span>.full_directory_index_size <span class="kw">as </span>u64,
+                    <span class="self">self</span>.full_directory_index_hash,
                     <span class="string">&quot;FullDirectoryIndex&quot;</span>,
                 )<span class="question-mark">?</span>;
             }
-            <span class="self">self</span>.<span class="ident">full_directory_index</span>.<span class="ident">ser_de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.full_directory_index.ser_de(ar)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_path_hash_index</span> <span class="op">&amp;&amp;</span> <span class="ident">ar</span>.<span class="ident">is_reader</span>() {
-            <span class="self">self</span>.<span class="ident">decoded_pak_entries</span> <span class="op">=</span> <span class="self">self</span>
-                .<span class="ident">path_hash_index</span>
-                .<span class="ident">values</span>()
-                .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">location</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">location</span>.<span class="ident">get</span>() {
-                    <span class="ident">PakEntryLocation</span>::<span class="ident">Offset</span>(<span class="ident">offset</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                        <span class="kw">if</span> <span class="ident">offset</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">encoded_pak_entries</span>.<span class="ident">len</span>() {
-                            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(
-                                <span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidData</span>,
-                                <span class="macro">format</span><span class="macro">!</span>(
+        <span class="kw">if </span><span class="self">self</span>.has_path_hash_index &amp;&amp; ar.is_reader() {
+            <span class="self">self</span>.decoded_pak_entries = <span class="self">self
+                </span>.path_hash_index
+                .values()
+                .filter_map(|location| <span class="kw">match </span>location.get() {
+                    PakEntryLocation::Offset(offset) =&gt; {
+                        <span class="kw">if </span>offset &gt; <span class="self">self</span>.encoded_pak_entries.len() {
+                            <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(io::Error::new(
+                                io::ErrorKind::InvalidData,
+                                <span class="macro">format!</span>(
                                     <span class="string">&quot;pak entry location offset {} out of bounds: [0, {}]&quot;</span>,
-                                    <span class="ident">offset</span>,
-                                    <span class="self">self</span>.<span class="ident">encoded_pak_entries</span>.<span class="ident">len</span>(),
+                                    offset,
+                                    <span class="self">self</span>.encoded_pak_entries.len(),
                                 ),
                             )));
                         }
-                        <span class="kw">let</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">io</span>::<span class="ident">Cursor</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">encoded_pak_entries</span>[<span class="ident">offset</span>..]);
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ar</span> <span class="op">=</span> <span class="ident">ArchiveReader</span>(<span class="ident">cursor</span>);
-                        <span class="prelude-val">Some</span>(<span class="self">Self</span>::<span class="ident">decode_entry</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ar</span>, <span class="ident">version</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">entry</span><span class="op">|</span> (<span class="ident">offset</span>, <span class="ident">entry</span>)))
+                        <span class="kw">let </span>cursor = io::Cursor::new(<span class="kw-2">&amp;</span><span class="self">self</span>.encoded_pak_entries[offset..]);
+                        <span class="kw">let </span><span class="kw-2">mut </span>ar = ArchiveReader(cursor);
+                        <span class="prelude-val">Some</span>(<span class="self">Self</span>::decode_entry(<span class="kw-2">&amp;mut </span>ar, version).map(|entry| (offset, entry)))
                     }
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                    <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
                 })
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+                .collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">can_encode_entry</span>(<span class="ident">entry</span>: <span class="kw-2">&amp;</span><span class="ident">PakEntry</span>, <span class="ident">version</span>: <span class="ident">PakVersion</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">let</span> <span class="ident">alignment</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">is_encrypted</span>() { <span class="ident">AES_BLOCK_SIZE</span> } <span class="kw">else</span> { <span class="number">1</span> };
-        <span class="kw">let</span> <span class="ident">header_size</span> <span class="op">=</span> <span class="ident">entry</span>.<span class="ident">ser_len_with</span>(<span class="ident">version</span>);
+    <span class="kw">fn </span>can_encode_entry(entry: <span class="kw-2">&amp;</span>PakEntry, version: PakVersion) -&gt; bool {
+        <span class="kw">let </span>alignment = <span class="kw">if </span>entry.is_encrypted() { AES_BLOCK_SIZE } <span class="kw">else </span>{ <span class="number">1 </span>};
+        <span class="kw">let </span>header_size = entry.ser_len_with(version);
 
-        <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">compression_method_index</span> <span class="op">&gt;</span><span class="op">=</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>) {
-            <span class="kw">return</span> <span class="bool-val">false</span>;
+        <span class="kw">if </span>entry.compression_method_index &gt;= (<span class="number">1 </span>&lt;&lt; <span class="number">6</span>) {
+            <span class="kw">return </span><span class="bool-val">false</span>;
         }
-        <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">compression_blocks</span>.<span class="ident">len</span>() <span class="op">&gt;</span><span class="op">=</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">16</span>) {
-            <span class="kw">return</span> <span class="bool-val">false</span>;
+        <span class="kw">if </span>entry.compression_blocks.len() &gt;= (<span class="number">1 </span>&lt;&lt; <span class="number">16</span>) {
+            <span class="kw">return </span><span class="bool-val">false</span>;
         }
-        <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">compression_method_index</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="kw">if</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">entry</span>.<span class="ident">compression_block_size</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">entry</span>.<span class="ident">uncompressed_size</span>
-                <span class="op">&amp;&amp;</span> ((<span class="ident">entry</span>.<span class="ident">compression_block_size</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">11</span>) <span class="op">&gt;</span> <span class="number">0x3f</span>)
+        <span class="kw">if </span>entry.compression_method_index != <span class="number">0 </span>{
+            <span class="kw">if </span>u64::from(entry.compression_block_size) != entry.uncompressed_size
+                &amp;&amp; ((entry.compression_block_size &gt;&gt; <span class="number">11</span>) &gt; <span class="number">0x3f</span>)
             {
-                <span class="kw">return</span> <span class="bool-val">false</span>;
+                <span class="kw">return </span><span class="bool-val">false</span>;
             }
-            <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">compression_blocks</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span>
-                <span class="op">&amp;&amp;</span> (<span class="ident">header_size</span> <span class="op">!</span><span class="op">=</span> <span class="ident">entry</span>.<span class="ident">compression_blocks</span>[<span class="number">0</span>].<span class="ident">compressed_start</span>)
+            <span class="kw">if </span>!entry.compression_blocks.is_empty()
+                &amp;&amp; (header_size != entry.compression_blocks[<span class="number">0</span>].compressed_start)
             {
-                <span class="kw">return</span> <span class="bool-val">false</span>;
+                <span class="kw">return </span><span class="bool-val">false</span>;
             }
-            <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">compression_blocks</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
-                <span class="kw">let</span> <span class="ident">aligned_block_size</span> <span class="op">=</span> <span class="ident">align</span>(
-                    <span class="ident">entry</span>.<span class="ident">compression_blocks</span>[<span class="number">0</span>].<span class="ident">compressed_end</span>
-                        <span class="op">-</span> <span class="ident">entry</span>.<span class="ident">compression_blocks</span>[<span class="number">0</span>].<span class="ident">compressed_start</span>,
-                    <span class="ident">alignment</span>,
+            <span class="kw">if </span>entry.compression_blocks.len() == <span class="number">1 </span>{
+                <span class="kw">let </span>aligned_block_size = align(
+                    entry.compression_blocks[<span class="number">0</span>].compressed_end
+                        - entry.compression_blocks[<span class="number">0</span>].compressed_start,
+                    alignment,
                 );
-                <span class="kw">if</span> <span class="ident">header_size</span> <span class="op">+</span> <span class="ident">entry</span>.<span class="ident">size</span>
-                    <span class="op">!</span><span class="op">=</span> <span class="ident">entry</span>.<span class="ident">compression_blocks</span>[<span class="number">0</span>].<span class="ident">compressed_start</span> <span class="op">+</span> <span class="ident">aligned_block_size</span>
+                <span class="kw">if </span>header_size + entry.size
+                    != entry.compression_blocks[<span class="number">0</span>].compressed_start + aligned_block_size
                 {
-                    <span class="kw">return</span> <span class="bool-val">false</span>;
+                    <span class="kw">return </span><span class="bool-val">false</span>;
                 }
             }
-            <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">compression_blocks</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev_size</span> <span class="op">=</span> <span class="ident">entry</span>.<span class="ident">compression_blocks</span>[<span class="number">0</span>].<span class="ident">compressed_end</span>
-                    <span class="op">-</span> <span class="ident">entry</span>.<span class="ident">compression_blocks</span>[<span class="number">0</span>].<span class="ident">compressed_start</span>;
-                <span class="kw">for</span> <span class="ident">compression_block</span> <span class="kw">in</span> <span class="ident">entry</span>.<span class="ident">compression_blocks</span>[<span class="number">1</span>..].<span class="ident">iter</span>() {
-                    <span class="ident">prev_size</span> <span class="op">=</span> <span class="ident">align</span>(<span class="ident">prev_size</span>, <span class="ident">alignment</span>);
-                    <span class="kw">if</span> <span class="ident">compression_block</span>.<span class="ident">compressed_start</span>
-                        <span class="op">!</span><span class="op">=</span> <span class="ident">compression_block</span>.<span class="ident">compressed_start</span> <span class="op">+</span> <span class="ident">prev_size</span>
+            <span class="kw">if </span>entry.compression_blocks.len() &gt; <span class="number">1 </span>{
+                <span class="kw">let </span><span class="kw-2">mut </span>prev_size = entry.compression_blocks[<span class="number">0</span>].compressed_end
+                    - entry.compression_blocks[<span class="number">0</span>].compressed_start;
+                <span class="kw">for </span>compression_block <span class="kw">in </span>entry.compression_blocks[<span class="number">1</span>..].iter() {
+                    prev_size = align(prev_size, alignment);
+                    <span class="kw">if </span>compression_block.compressed_start
+                        != compression_block.compressed_start + prev_size
                     {
-                        <span class="kw">return</span> <span class="bool-val">false</span>;
+                        <span class="kw">return </span><span class="bool-val">false</span>;
                     }
-                    <span class="ident">prev_size</span> <span class="op">=</span>
-                        <span class="ident">compression_block</span>.<span class="ident">compressed_end</span> <span class="op">-</span> <span class="ident">compression_block</span>.<span class="ident">compressed_start</span>;
+                    prev_size =
+                        compression_block.compressed_end - compression_block.compressed_start;
                 }
             }
         }
 
-        <span class="bool-val">true</span>
-    }
+        <span class="bool-val">true
+    </span>}
 
-    <span class="kw">fn</span> <span class="ident">encode_entry</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Archive</span><span class="op">&gt;</span>(
-        <span class="ident">ar</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>,
-        <span class="ident">entry</span>: <span class="kw-2">&amp;</span><span class="ident">PakEntry</span>,
-        <span class="ident">version</span>: <span class="ident">PakVersion</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="self">Self</span>::<span class="ident">can_encode_entry</span>(<span class="ident">entry</span>, <span class="ident">version</span>) {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>);
+    <span class="kw">fn </span>encode_entry&lt;A: Archive&gt;(
+        ar: <span class="kw-2">&amp;mut </span>A,
+        entry: <span class="kw-2">&amp;</span>PakEntry,
+        version: PakVersion,
+    ) -&gt; io::Result&lt;bool&gt; {
+        <span class="kw">if </span>!<span class="self">Self</span>::can_encode_entry(entry, version) {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">false</span>);
         }
 
-        <span class="kw">let</span> <span class="ident">offset_u32</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="ident">entry</span>.<span class="ident">offset</span>).<span class="ident">ok</span>();
-        <span class="kw">let</span> <span class="ident">size_u32</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="ident">entry</span>.<span class="ident">size</span>).<span class="ident">ok</span>();
-        <span class="kw">let</span> <span class="ident">uncompressed_size_u32</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="ident">entry</span>.<span class="ident">uncompressed_size</span>).<span class="ident">ok</span>();
-        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> (<span class="ident">u32</span>::<span class="ident">from</span>(<span class="ident">offset_u32</span>.<span class="ident">is_some</span>()) <span class="op">*</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">31</span>))
-            <span class="op">|</span> (<span class="ident">u32</span>::<span class="ident">from</span>(<span class="ident">uncompressed_size_u32</span>.<span class="ident">is_some</span>()) <span class="op">*</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">30</span>))
-            <span class="op">|</span> (<span class="ident">u32</span>::<span class="ident">from</span>(<span class="ident">size_u32</span>.<span class="ident">is_some</span>()) <span class="op">*</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">29</span>)
-            <span class="op">|</span> (<span class="ident">entry</span>.<span class="ident">compression_method_index</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">23</span>)
-            <span class="op">|</span> (<span class="ident">u32</span>::<span class="ident">from</span>(<span class="ident">entry</span>.<span class="ident">is_encrypted</span>()) <span class="op">*</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">22</span>))
-            <span class="op">|</span> ((<span class="ident">entry</span>.<span class="ident">compression_blocks</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>)
-            <span class="op">|</span> (<span class="ident">entry</span>.<span class="ident">compression_block_size</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">11</span>);
+        <span class="kw">let </span>offset_u32 = u32::try_from(entry.offset).ok();
+        <span class="kw">let </span>size_u32 = u32::try_from(entry.size).ok();
+        <span class="kw">let </span>uncompressed_size_u32 = u32::try_from(entry.uncompressed_size).ok();
+        <span class="kw">let </span>flags = (u32::from(offset_u32.is_some()) * (<span class="number">1 </span>&lt;&lt; <span class="number">31</span>))
+            | (u32::from(uncompressed_size_u32.is_some()) * (<span class="number">1 </span>&lt;&lt; <span class="number">30</span>))
+            | (u32::from(size_u32.is_some()) * (<span class="number">1 </span>&lt;&lt; <span class="number">29</span>))
+            | (entry.compression_method_index &lt;&lt; <span class="number">23</span>)
+            | (u32::from(entry.is_encrypted()) * (<span class="number">1 </span>&lt;&lt; <span class="number">22</span>))
+            | ((entry.compression_blocks.len() <span class="kw">as </span>u32) &lt;&lt; <span class="number">6</span>)
+            | (entry.compression_block_size &gt;&gt; <span class="number">11</span>);
 
-        <span class="ident">flags</span>.<span class="ident">ser</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-        <span class="kw">match</span> <span class="ident">offset_u32</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="ident">ser</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>,
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">entry</span>.<span class="ident">offset</span>.<span class="ident">ser</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>,
+        flags.ser(ar)<span class="question-mark">?</span>;
+        <span class="kw">match </span>offset_u32 {
+            <span class="prelude-val">Some</span>(v) =&gt; v.ser(ar)<span class="question-mark">?</span>,
+            <span class="prelude-val">None </span>=&gt; entry.offset.ser(ar)<span class="question-mark">?</span>,
         }
-        <span class="kw">match</span> <span class="ident">uncompressed_size_u32</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="ident">ser</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>,
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">entry</span>.<span class="ident">uncompressed_size</span>.<span class="ident">ser</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>,
+        <span class="kw">match </span>uncompressed_size_u32 {
+            <span class="prelude-val">Some</span>(v) =&gt; v.ser(ar)<span class="question-mark">?</span>,
+            <span class="prelude-val">None </span>=&gt; entry.uncompressed_size.ser(ar)<span class="question-mark">?</span>,
         }
-        <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">compression_method_index</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="kw">match</span> <span class="ident">size_u32</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="ident">ser</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>,
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">entry</span>.<span class="ident">size</span>.<span class="ident">ser</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>,
+        <span class="kw">if </span>entry.compression_method_index != <span class="number">0 </span>{
+            <span class="kw">match </span>size_u32 {
+                <span class="prelude-val">Some</span>(v) =&gt; v.ser(ar)<span class="question-mark">?</span>,
+                <span class="prelude-val">None </span>=&gt; entry.size.ser(ar)<span class="question-mark">?</span>,
             }
-            <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">compression_blocks</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span>
-                <span class="op">|</span><span class="op">|</span> (<span class="ident">entry</span>.<span class="ident">compression_blocks</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">entry</span>.<span class="ident">is_encrypted</span>())
+            <span class="kw">if </span>entry.compression_blocks.len() &gt; <span class="number">1
+                </span>|| (entry.compression_blocks.len() == <span class="number">1 </span>&amp;&amp; entry.is_encrypted())
             {
-                <span class="kw">for</span> <span class="ident">compression_block</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">entry</span>.<span class="ident">compression_blocks</span> {
-                    <span class="kw">let</span> <span class="ident">block_size</span> <span class="op">=</span>
-                        <span class="ident">compression_block</span>.<span class="ident">compressed_end</span> <span class="op">-</span> <span class="ident">compression_block</span>.<span class="ident">compressed_start</span>;
-                    <span class="ident">block_size</span>.<span class="ident">ser</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
+                <span class="kw">for </span>compression_block <span class="kw">in </span><span class="kw-2">&amp;</span>entry.compression_blocks {
+                    <span class="kw">let </span>block_size =
+                        compression_block.compressed_end - compression_block.compressed_start;
+                    block_size.ser(ar)<span class="question-mark">?</span>;
                 }
             }
         }
@@ -1024,72 +1020,71 @@
         <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">decode_entry</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Archive</span><span class="op">&gt;</span>(<span class="ident">ar</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>, <span class="ident">version</span>: <span class="ident">PakVersion</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PakEntry</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entry</span> <span class="op">=</span> <span class="ident">PakEntry</span>::<span class="ident">default</span>();
-        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
-        <span class="ident">entry</span>.<span class="ident">compression_method_index</span> <span class="op">=</span> (<span class="ident">value</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">23</span>) <span class="op">&amp;</span> <span class="number">0x3f</span>;
+    <span class="kw">fn </span>decode_entry&lt;A: Archive&gt;(ar: <span class="kw-2">&amp;mut </span>A, version: PakVersion) -&gt; io::Result&lt;PakEntry&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>entry = PakEntry::default();
+        <span class="kw">let </span>value = u32::de(ar)<span class="question-mark">?</span>;
+        entry.compression_method_index = (value &gt;&gt; <span class="number">23</span>) &amp; <span class="number">0x3f</span>;
 
-        <span class="kw">let</span> <span class="ident">is_offset_u32</span> <span class="op">=</span> (<span class="ident">value</span> <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">31</span>)) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">if</span> <span class="ident">is_offset_u32</span> {
-            <span class="ident">entry</span>.<span class="ident">offset</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">u32</span>::<span class="ident">de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>);
-        } <span class="kw">else</span> {
-            <span class="ident">entry</span>.<span class="ident">offset</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>is_offset_u32 = (value &amp; (<span class="number">1 </span>&lt;&lt; <span class="number">31</span>)) != <span class="number">0</span>;
+        <span class="kw">if </span>is_offset_u32 {
+            entry.offset = u64::from(u32::de(ar)<span class="question-mark">?</span>);
+        } <span class="kw">else </span>{
+            entry.offset = u64::de(ar)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">let</span> <span class="ident">is_uncompressed_size_u32</span> <span class="op">=</span> (<span class="ident">value</span> <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">30</span>)) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">if</span> <span class="ident">is_uncompressed_size_u32</span> {
-            <span class="ident">entry</span>.<span class="ident">uncompressed_size</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">u32</span>::<span class="ident">de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>);
-        } <span class="kw">else</span> {
-            <span class="ident">entry</span>.<span class="ident">uncompressed_size</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>is_uncompressed_size_u32 = (value &amp; (<span class="number">1 </span>&lt;&lt; <span class="number">30</span>)) != <span class="number">0</span>;
+        <span class="kw">if </span>is_uncompressed_size_u32 {
+            entry.uncompressed_size = u64::from(u32::de(ar)<span class="question-mark">?</span>);
+        } <span class="kw">else </span>{
+            entry.uncompressed_size = u64::de(ar)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">compression_method_index</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="kw">let</span> <span class="ident">is_size_u32</span> <span class="op">=</span> (<span class="ident">value</span> <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">29</span>)) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>;
-            <span class="kw">if</span> <span class="ident">is_size_u32</span> {
-                <span class="ident">entry</span>.<span class="ident">size</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">u32</span>::<span class="ident">de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>);
-            } <span class="kw">else</span> {
-                <span class="ident">entry</span>.<span class="ident">size</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>;
+        <span class="kw">if </span>entry.compression_method_index != <span class="number">0 </span>{
+            <span class="kw">let </span>is_size_u32 = (value &amp; (<span class="number">1 </span>&lt;&lt; <span class="number">29</span>)) != <span class="number">0</span>;
+            <span class="kw">if </span>is_size_u32 {
+                entry.size = u64::from(u32::de(ar)<span class="question-mark">?</span>);
+            } <span class="kw">else </span>{
+                entry.size = u64::de(ar)<span class="question-mark">?</span>;
             }
-        } <span class="kw">else</span> {
-            <span class="ident">entry</span>.<span class="ident">size</span> <span class="op">=</span> <span class="ident">entry</span>.<span class="ident">uncompressed_size</span>;
+        } <span class="kw">else </span>{
+            entry.size = entry.uncompressed_size;
         }
 
-        <span class="kw">if</span> (<span class="ident">value</span> <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">22</span>)) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="ident">entry</span>.<span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">FLAG_ENCRYPTED</span>;
+        <span class="kw">if </span>(value &amp; (<span class="number">1 </span>&lt;&lt; <span class="number">22</span>)) != <span class="number">0 </span>{
+            entry.flags |= FLAG_ENCRYPTED;
         }
 
-        <span class="kw">let</span> <span class="ident">compression_blocks_len</span> <span class="op">=</span> ((<span class="ident">value</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">6</span>) <span class="op">&amp;</span> <span class="number">0xffff</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-        <span class="kw">if</span> <span class="ident">compression_blocks_len</span> <span class="op">&gt;</span> <span class="number">0</span> {
-            <span class="ident">entry</span>.<span class="ident">compression_block_size</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">uncompressed_size</span> <span class="op">&lt;</span> <span class="number">65536</span> {
-                <span class="ident">entry</span>.<span class="ident">uncompressed_size</span> <span class="kw">as</span> <span class="ident">u32</span>
-            } <span class="kw">else</span> {
-                (<span class="ident">value</span> <span class="op">&amp;</span> <span class="number">0x3f</span>) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">11</span>
-            };
+        <span class="kw">let </span>compression_blocks_len = ((value &gt;&gt; <span class="number">6</span>) &amp; <span class="number">0xffff</span>) <span class="kw">as </span>usize;
+        <span class="kw">if </span>compression_blocks_len &gt; <span class="number">0 </span>{
+            entry.compression_block_size = <span class="kw">if </span>entry.uncompressed_size &lt; <span class="number">65536 </span>{
+                entry.uncompressed_size <span class="kw">as </span>u32
+            } <span class="kw">else </span>{
+                (value &amp; <span class="number">0x3f</span>) &lt;&lt; <span class="number">11
+            </span>};
         }
 
-        <span class="ident">entry</span>.<span class="ident">compression_blocks</span>.<span class="ident">clear</span>();
-        <span class="kw">if</span> <span class="ident">compression_blocks_len</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">entry</span>.<span class="ident">is_encrypted</span>() {
-            <span class="kw">let</span> <span class="ident">compressed_start</span> <span class="op">=</span> <span class="ident">entry</span>.<span class="ident">ser_de_len_with</span>(<span class="ident">version</span>);
-            <span class="ident">entry</span>.<span class="ident">compression_blocks</span>.<span class="ident">push</span>(<span class="ident">PakCompressedBlock</span> {
-                <span class="ident">compressed_start</span>: <span class="ident">compressed_start</span>,
-                <span class="ident">compressed_end</span>: (<span class="ident">compressed_start</span> <span class="op">+</span> <span class="ident">entry</span>.<span class="ident">size</span>),
+        entry.compression_blocks.clear();
+        <span class="kw">if </span>compression_blocks_len == <span class="number">1 </span>&amp;&amp; !entry.is_encrypted() {
+            <span class="kw">let </span>compressed_start = entry.ser_de_len_with(version);
+            entry.compression_blocks.push(PakCompressedBlock {
+                compressed_start,
+                compressed_end: (compressed_start + entry.size),
             });
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">compression_blocks_len</span> <span class="op">&gt;</span> <span class="number">0</span> {
-            <span class="kw">let</span> <span class="ident">alignment</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">is_encrypted</span>() { <span class="ident">AES_BLOCK_SIZE</span> } <span class="kw">else</span> { <span class="number">1</span> };
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">compressed_start</span> <span class="op">=</span> <span class="ident">entry</span>.<span class="ident">ser_de_len_with</span>(<span class="ident">version</span>);
-            <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">compression_blocks_len</span> {
-                <span class="kw">let</span> <span class="ident">block_size</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">u32</span>::<span class="ident">de</span>(<span class="ident">ar</span>)<span class="question-mark">?</span>);
-                <span class="kw">let</span> <span class="ident">compressed_end</span> <span class="op">=</span> <span class="ident">compressed_start</span> <span class="op">+</span> <span class="ident">block_size</span>;
-                <span class="ident">entry</span>
-                    .<span class="ident">compression_blocks</span>
-                    .<span class="ident">push</span>(<span class="ident">PakCompressedBlock</span> { <span class="ident">compressed_start</span>, <span class="ident">compressed_end</span> });
-                <span class="ident">compressed_start</span> <span class="op">+</span><span class="op">=</span> <span class="ident">align</span>(<span class="ident">block_size</span>, <span class="ident">alignment</span>);
+        } <span class="kw">else if </span>compression_blocks_len &gt; <span class="number">0 </span>{
+            <span class="kw">let </span>alignment = <span class="kw">if </span>entry.is_encrypted() { AES_BLOCK_SIZE } <span class="kw">else </span>{ <span class="number">1 </span>};
+            <span class="kw">let </span><span class="kw-2">mut </span>compressed_start = entry.ser_de_len_with(version);
+            <span class="kw">for _ in </span><span class="number">0</span>..compression_blocks_len {
+                <span class="kw">let </span>block_size = u64::from(u32::de(ar)<span class="question-mark">?</span>);
+                <span class="kw">let </span>compressed_end = compressed_start + block_size;
+                entry
+                    .compression_blocks
+                    .push(PakCompressedBlock { compressed_start, compressed_end });
+                compressed_start += align(block_size, alignment);
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">entry</span>)
+        <span class="prelude-val">Ok</span>(entry)
     }
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="ue4pak" data-search-js="../../search-index.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="ue4pak" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>
